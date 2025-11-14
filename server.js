@@ -18,13 +18,12 @@ import path from "path";
 
 import 'dotenv/config';
 // ----------------------
-const JWT_SECRET="your-super-secret-key-12345"
-// hidden no one try to see this be this as a secreat
-const GOOGLE_CLIENT_ID="YOUR-CLIENT-ID"
-const GOOGLE_CLIENT_SECRET="YOUR-CLIENT-SECRET"
-// -- Forgot password----
-const EMAIL_USER="your-email@gmail.com"
-const EMAIL_PASS="your-16-char-password"
+// Your secrets are now loaded securely from your .env file
+const JWT_SECRET = process.env.JWT_SECRET;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
 
 const app = express();
 app.use(cors());
@@ -403,7 +402,34 @@ app.get("/profile", verifyToken, async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+// --- TEST EMAIL ROUTE ---
+app.get("/test-email", async (req, res) => {
+    console.log("Attempting to send a test email...");
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: EMAIL_USER,
+                pass: EMAIL_PASS,
+            },
+        });
 
+        await transporter.sendMail({
+            from: `"FLY Social Test" <${EMAIL_USER}>`,
+            to: EMAIL_USER, // Send it to yourself
+            subject: "Nodemailer Test",
+            html: "<p>This is a test email. If you got this, it's working!</p>"
+        });
+
+        console.log("Test email sent successfully!");
+        res.send("Test email sent successfully! Check your inbox.");
+
+    } catch (err) {
+        console.error("--- NODEMAILER TEST FAILED ---");
+        console.error(err); // This will show the EAUTH error if it's still broken
+        res.status(500).send("Failed to send email. Check your server.js terminal.");
+    }
+});
 app.listen(5000, () => {
     console.log("Server running on http://localhost:5000");
 });

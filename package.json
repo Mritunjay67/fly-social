@@ -13,6 +13,7 @@
     "baseline-browser-mapping": "^2.8.23",
     "browserslist": "^4.27.0",
     "caniuse-lite": "^1.0.30001753",
+    "dotenv": "^17.2.3",
     "electron-to-chromium": "^1.5.244",
     "escalade": "^3.2.0",
     "express-session": "^1.18.2",
