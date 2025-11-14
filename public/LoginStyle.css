@@ -1,0 +1,81 @@
+@import "tailwindcss";
+/* public/LoginStyle.css */
+
+.Login.Box {
+    /* --- STYLES FOR SHADOW AND COLOR --- */
+    background-color: #3b3073; /* A darker, rich purple/indigo */
+    padding: 2.5rem;           /* Add some padding inside the box */
+    border-radius: 0.75rem;    /* Rounded corners */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), /* Large, soft shadow */
+                0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    /* --- END NEW STYLES --- */
+    
+    /* Ensure it's centered and has a max width */
+    max-width: 28rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Form fields */
+.Login.Box input[type="email"],
+.Login.Box input[type="password"],
+.Login.Box input[type="text"] {
+    background-color: #4a3f80; /* A slightly lighter purple/indigo for inputs */
+    border: 1px solid #5a4f90; /* A subtle border */
+    color: #e0e0e0;            /* Lighter text for better contrast */
+}
+
+.Login.Box input[type="email"]:focus,
+.Login.Box input[type="password"]:focus,
+.Login.Box input[type="text"]:focus {
+    outline-color: #8c7aea; /* A brighter focus outline */
+}
+
+/* Style for icons */
+.Login.Box .fa-solid {
+    color: #a0a0a0; /* Make icons slightly lighter */
+    margin-left: 0.5rem; /* Space between label and icon */
+}
+
+.Login.Box h1 {
+    color: #e0e0e0; /* Adjust header color */
+    font-size: 2rem; /* Make it a good size */
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2rem; /* Space below the title */
+}
+
+/* Footer links */
+.Login.Box p {
+    color: #bdbdbd;
+}
+.Login.Box p a {
+    color: #a0a0ff; /* Lighter blue for links */
+}
+.Login.Box p a:hover {
+    color: #c0c0ff; /* Even lighter on hover */
+}
+
+/* This targets the <div> that holds the password input and icon */
+.Login.Box .relative {
+  position: relative;
+}
+
+/* This styles the 'eye' icon itself */
+.Login.Box .fa-eye,
+.Login.Box .fa-eye-slash {
+  position: absolute;   /* Takes the icon out of the normal flow */
+  top: 50%;             /* Moves it down 50% from the top */
+  right: 0.75rem;       /* Positions it 0.75rem (12px) from the right edge */
+  transform: translateY(-50%); /* Pulls it back up by 50% of *its own* height, perfectly centering it vertically */
+  
+  color: #9ca3af;     /* A medium gray color (Tailwind's gray-400) */
+  cursor: pointer;     /* Changes the mouse to a hand to show it's clickable */
+  transition: color 0.2s ease; /* Adds a smooth color change on hover */
+}
+
+/* This changes the icon color when you hover over it */
+.Login.Box .fa-eye:hover,
+.Login.Box .fa-eye-slash:hover {
+  color: #ffffff;     /* Changes color to white on hover */
+}

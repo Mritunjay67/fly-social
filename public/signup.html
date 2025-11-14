@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLY Social - Sign Up</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+            body {
+                  box-sizing: border-box;
+            }
+            .font-inter {
+                  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            }
+            .gradient-bg {
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            }
+            .glass-effect {
+                  background: rgba(255, 255, 255, 0.95);
+                  backdrop-filter: blur(20px);
+                  border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            .gradient-text {
+                  background: linear-gradient(135deg, #667eea, #764ba2);
+                  -webkit-background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  background-clip: text;
+            }
+            .gradient-button {
+                  background: linear-gradient(135deg, #667eea, #764ba2);
+            }
+            .gradient-button:hover {
+                  background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            }
+            .input-focus:focus {
+                  border-color: #667eea;
+                  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            }
+            .slide-up {
+                  animation: slideUp 0.6s ease-out;
+            }
+            @keyframes slideUp {
+                  from { opacity: 0; transform: translateY(30px); }
+                  to { opacity: 1; transform: translateY(0); }
+            }
+            .success-pulse {
+                  animation: successPulse 0.6s ease-out;
+            }
+            @keyframes successPulse {
+                  0% { transform: scale(0); }
+                  50% { transform: scale(1.1); }
+                  100% { transform: scale(1); }
+            }
+            .spinner {
+                  animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+            }
+            .logo img {
+                  width: 100%; 
+                  height: 100%;
+                  object-fit: contain;
+            }
+      </style>
+</head>
+<body class="min-h-screen font-inter gradient-bg flex items-center justify-center p-4">
+ <main class="glass-effect rounded-3xl p-10 w-full max-w-md shadow-2xl slide-up">
+  <div id="signup-form">
+       <div class="text-center mb-8">
+      <div class="logo inline-flex items-center justify-center w-32 h-32  rounded-2xl mb-2 shadow-lg">
+       <img src="images/fly-logo.png" alt="FLY Social Logo">
+      </div>
+      <h1 class="text-3xl font-bold gradient-text mb-1" id="app-name">FLY Social</h1>
+      <p class="text-gray-600 text-sm" id="tagline">Connect. Share. Fly High.</p>
+      </div>
+       <div class="text-center mb-8">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-2" id="signup-title">Create Your Account</h2>
+      <p class="text-gray-600" id="signup-subtitle">Join the community and start your journey</p>
+      </div>
+            <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-6">
+      
+                  <!-- NAME SECTION -->
+                  <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewbox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                  </div>
+                  <input type="text" id="fullName" class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl input-focus transition-all duration-300 bg-white/80" placeholder="Full Name" required>
+                  <div class="error-message text-red-500 text-xs mt-1 hidden">Please enter your full name</div>
+                  </div>
+
+                  <!--USER NAME SECTION -->
+                  <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
+                  </div>
+                  <input type="text" id="username" class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl input-focus transition-all duration-300 bg-white/80" placeholder="Username" required>
+                  <div class="error-message text-red-500 text-xs mt-1 hidden">Username must be at least 3 characters</div>
+                  <div class="success-message text-green-500 text-xs mt-1 hidden">Username is available!</div>
+                  </div>
+
+                  <!-- E-MAIL SECTION -->
+                  <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewbox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" /></svg>
+                  </div>
+                  <input type="email" id="email" class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl input-focus transition-all duration-300 bg-white/80" placeholder="Email Address" required>
+                  <div class="error-message text-red-500 text-xs mt-1 hidden">Please enter a valid email address</div>
+                  </div>
+
+                  <!-- PASSWORD SECTION -->
+                  <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewbox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" /></svg>
+                  </div>
+                  <input type="password" id="password" class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl input-focus transition-all duration-300 bg-white/80" placeholder="Password" required>
+                  <div class="text-right -mt-4 mb-2 pr-1">
+                      <button type="button" id="generatePasswordBtn" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                        Generate
+                      </button>
+                    </div>
+
+                  <!--EYE PROTECTION PASSWORD-->
+                  <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center" onclick="togglePassword('password', 'password-toggle-icon-1')">
+                    <svg id="password-toggle-icon-1" class="w-5 h-5 text-gray-400 hover:text-indigo-600" fill="currentColor" viewbox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                    </svg>
+                  </button> <!--END HERE EYE-->
+
+                  <div id="password-strength" class="mt-2 hidden">
+                  <div class="h-1 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="strength-fill" class="h-full transition-all duration-300 rounded-full"></div>
+                  </div>
+                  <div class="text-xs mt-1">
+                        Password strength: <span id="strength-level" class="font-medium">Weak</span>
+                  </div>
+                  </div>
+                  <div class="error-message text-red-500 text-xs mt-1 hidden">Password must be at least 8 characters</div>
+                  </div>
+
+                  <!-- CONFIRM PASSWORD SECTION -->
+                  <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewbox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" /></svg>
+                  </div>
+                  <input type="password" id="confirmPassword" class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl input-focus transition-all duration-300 bg-white/80" placeholder="Confirm Password" required>
+                  
+                  <!--EYE PROTECTION PASSWORD-->
+                  <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center" onclick="togglePassword('confirmPassword', 'password-toggle-icon-2')">
+                    <svg id="password-toggle-icon-2" class="w-5 h-5 text-gray-400 hover:text-indigo-600" fill="currentColor" viewbox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                    </svg>
+                  </button> 
+                  <!--END HERE EYE-->
+                  <div class="error-message text-red-500 text-xs mt-1 hidden">Passwords do not match</div>
+                  <div class="success-message text-green-500 text-xs mt-1 hidden">Passwords match!</div>
+                  </div>
+                  <!--BUTTON OF SIGNUP SECTION-->
+                  <button type="submit" class="w-full gradient-button text-white py-4 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"> 
+                        <span class="button-text">Sign Up</span>
+                        <div class="button-loading absolute inset-0 items-center justify-center hidden">
+                        <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full spinner"></div>
+                        </div>
+                  </button>
+            </form>
+       <div class="text-center mt-6">
+        <p class="text-gray-600" id="login-link-text">Already have an account? <a href="Login.html" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-300">Log in</a></p>
+      </div>
+   </div>
+       <div id="success-animation" class="text-center py-8 hidden">
+      <div class="w-20 h-20 bg-linear-to-r from-green-400 to-green-600 rounded-full mx-auto mb-4 flex items-center justify-center success-pulse">
+       <svg class="w-10 h-10 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+      </div>
+      <h2 class="text-2xl font-semibold text-gray-900 mb-2">Welcome to FLY Social!</h2>
+      <p class="text-gray-600 mb-6">Your account has been created successfully. Get ready to connect and fly high!</p>
+      <button onclick="window.location.href='Login.html'" class="gradient-button text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">Continue to Login</button>
+   </div>
+ </main>
+  
+   <script>
+          // --- **** ADD THIS ENTIRE NEW BLOCK **** ---
+          document.addEventListener('DOMContentLoaded', () => {
+            // 1. The generator function
+            function generateStrongPassword() {
+                const length = 14;
+                const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+                let password = "";
+                // Guarantee one of each type for strength
+                password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
+                password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
+                password += "0123456789"[Math.floor(Math.random() * 10)];
+                password += "!@#$%^&*()_+"[Math.floor(Math.random() * 12)];
+                
+                // Fill the rest of the length
+                for (let i = 4; i < length; i++) {
+                    password += chars[Math.floor(Math.random() * chars.length)];
+                }
+                // Shuffle the password to make it random
+                return password.split('').sort(() => 0.5 - Math.random()).join('');
+            }
+
+            // 2. Get the elements
+            const generateBtn = document.getElementById('generatePasswordBtn');
+            const passwordField = document.getElementById('password');
+            const confirmPasswordField = document.getElementById('confirmPassword');
+
+            // 3. Add the click event
+            if (generateBtn) {
+              generateBtn.addEventListener('click', () => {
+                  const newPassword = generateStrongPassword();
+                  
+                  // 4. Set the values for both fields
+                  passwordField.value = newPassword;
+                  confirmPasswordField.value = newPassword;
+
+                  // 5. IMPORTANT: Trigger the validation functions
+                  // This makes the UI update to "Strong" and "Passwords match!"
+                  checkPasswordStrength(newPassword);
+                  validateField(passwordField, value => value.length >= 8, 'Password must be at least 8 characters');
+                  validateField(confirmPasswordField, value => value === newPassword, 'Passwords do not match');
+              });
+            }
+          });
+          // --- **** END OF NEW BLOCK **** ---
+            
+            // --- **** ADD THIS NEW FUNCTION **** ---
+                    let passwordVisible = {}; // Store visibility state for each input
+
+                    function togglePassword(inputId, iconId) {
+                        const passwordInput = document.getElementById(inputId);
+                        const toggleIcon = document.getElementById(iconId);
+                        
+                        // If this is the first time, set visible to false
+                        if (passwordVisible[inputId] === undefined) {
+                            passwordVisible[inputId] = false;
+                        }
+                        
+                        // Toggle the visibility state
+                        passwordVisible[inputId] = !passwordVisible[inputId];
+                        
+                        if (passwordVisible[inputId]) {
+                            // Show password
+                        passwordInput.type = 'text';
+                        // Set icon to "eye-slash"
+                            toggleIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/>`;
+                        } else {
+                            // Hide password
+                        passwordInput.type = 'password';
+                        // Set icon to "eye"
+                            toggleIcon.innerHTML = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`;
+                        }
+                    }
+            // --- **** END OF NEW FUNCTION **** ---
+
+
+        
+        
+            // --- UI Validation Logic ---
+            function validateField(field, validationFn, errorMessage) {
+                  const errorDiv = field.parentNode.querySelector('.error-message');
+                  const successDiv = field.parentNode.querySelector('.success-message');
+            
+                  if (validationFn(field.value)) {
+                        field.classList.remove('border-red-300');
+                        field.classList.add('border-green-300');
+                        if (errorDiv) errorDiv.classList.add('hidden');
+                        if (successDiv) successDiv.classList.remove('hidden');
+                        return true;
+                  } else {
+                        field.classList.remove('border-green-300');
+                        field.classList.add('border-red-300');
+                        if (errorDiv) {
+                              errorDiv.textContent = errorMessage;
+                              errorDiv.classList.remove('hidden');
+                        }
+                        if (successDiv) successDiv.classList.add('hidden');
+                        return false;
+                  }
+            }
+
+            function checkPasswordStrength(password) {
+                  const strengthContainer = document.getElementById('password-strength');
+                  const strengthFill = document.getElementById('strength-fill');
+                  const strengthLevel = document.getElementById('strength-level');
+
+                  if (!strengthContainer || !strengthFill || !strengthLevel) return;
+
+                  if (password.length === 0) {
+                        strengthContainer.classList.add('hidden');
+                        return;
+                  }
+
+                  strengthContainer.classList.remove('hidden');
+
+                  let strength = 0;
+                  let level = 'Weak';
+                  let color = 'bg-red-500';
+
+                  if (password.length >= 8) strength += 25;
+                  if (/[A-Z]/.test(password)) strength += 25;
+                  if (/[0-9]/.test(password)) strength += 25;
+                  if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+
+                  if (strength >= 75) {
+                        level = 'Strong';
+                        color = 'bg-green-500';
+                  } else if (strength >= 50) {
+                        level = 'Medium';
+                        color = 'bg-yellow-500';
+                  }
+
+                  strengthFill.style.width = strength + '%';
+                  strengthFill.className = 'h-full transition-all duration-300 rounded-full ' + color;
+                  strengthLevel.textContent = level;
+                  strengthLevel.className = 'font-medium ' + (strength >= 75 ? 'text-green-600' : strength >= 50 ? 'text-yellow-600' : 'text-red-600');
+            }
+
+            // --- Event Listeners ---
+            document.getElementById('fullName').addEventListener('blur', function() {
+                  validateField(this, value => value.trim().length >= 2, 'Please enter your full name');
+            });
+            document.getElementById('username').addEventListener('blur', function() {
+                  validateField(this, value => value.length >= 3 && /^[a-zA-Z0-9_]+$/.test(value), 'Username must be at least 3 characters and contain only letters, numbers, and underscores');
+            });
+            document.getElementById('email').addEventListener('blur', function() {
+                  validateField(this, value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), 'Please enter a valid email address');
+            });
+            document.getElementById('password').addEventListener('input', function() {
+                  checkPasswordStrength(this.value);
+                  validateField(this, value => value.length >= 8, 'Password must be at least 8 characters');
+                  const confirmPassword = document.getElementById('confirmPassword');
+                  if (confirmPassword.value) {
+                        validateField(confirmPassword, value => value === this.value, 'Passwords do not match');
+                  }
+            });
+            document.getElementById('confirmPassword').addEventListener('blur', function() {
+                  const password = document.getElementById('password').value;
+                  validateField(this, value => value === password, 'Passwords do not match');
+            });
+
+            // --- handleSignup Function ---
+            async function handleSignup(event) {
+                  event.preventDefault();
+            
+                  // --- 1. Validate all fields ---
+                  const fullNameField = document.getElementById('fullName');
+                  const usernameField = document.getElementById('username');
+                  const emailField = document.getElementById('email');
+                  const passwordField = document.getElementById('password');
+                  const confirmPasswordField = document.getElementById('confirmPassword');
+            
+                  const isFullNameValid = validateField(fullNameField, value => value.trim().length >= 2, 'Please enter your full name');
+                  const isUsernameValid = validateField(usernameField, value => value.length >= 3 && /^[a-zA-Z0-9_]+$/.test(value), 'Username must be at least 3 characters');
+                  const isEmailValid = validateField(emailField, value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), 'Please enter a valid email address');
+                  const isPasswordValid = validateField(passwordField, value => value.length >= 8, 'Password must be at least 8 characters');
+                  const isConfirmPasswordValid = validateField(confirmPasswordField, value => value === passwordField.value, 'Passwords do not match');
+            
+                  if (isFullNameValid && isUsernameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
+                        // --- 2. Show loading state ---
+                        const button = document.querySelector('button[type="submit"]');
+                        const buttonText = button.querySelector('.button-text');
+                        const buttonLoading = button.querySelector('.button-loading');
+                
+                        button.disabled = true;
+                        buttonText.classList.add('opacity-0');
+                        buttonLoading.classList.remove('hidden');
+                        buttonLoading.classList.add('flex');
+                
+                        // --- 3. Send data to YOUR backend ---
+                        try {
+                              const name = fullNameField.value;
+                              const username = usernameField.value;
+                              const email = emailField.value;
+                              const password = passwordField.value;
+
+                              const response = await fetch("http://localhost:5000/signup", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ name, username, email, password }),
+                              });
+
+                              let data = {};
+                              try { data = await response.json(); } catch (e) { /* ignore */ }
+
+                              if (response.ok) {
+                                    document.getElementById('signup-form').classList.add('hidden');
+                                    document.getElementById('success-animation').classList.remove('hidden');
+                              } else {
+                                    button.disabled = false;
+                                    buttonText.classList.remove('opacity-0');
+                                    buttonLoading.classList.add('hidden');
+                                    buttonLoading.classList.remove('flex');
+
+                                    const message = (data && data.message) ? data.message : 'Signup failed';
+                                    if (message.includes('Email')) {
+                                          validateField(emailField, () => false, message);
+                                    } else if (message.includes('Username')) {
+                                          let errorMsg = message;
+                                          if (data && data.suggestion) errorMsg += ' Try: ' + data.suggestion;
+                                          validateField(usernameField, () => false, errorMsg);
+                                    } else {
+                                          alert(message);
+                                    }
+                              }
+                        } catch (error) {
+                              console.error('Signup Error:', error);
+                              button.disabled = false;
+                              buttonText.classList.remove('opacity-0');
+                              buttonLoading.classList.add('hidden');
+                              buttonLoading.classList.remove('flex');
+                              alert("Error connecting to server. Please try again later.");
+                        }
+                  }
+            }
+      </script>
+</body>
+</html>
