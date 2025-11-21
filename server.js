@@ -25,6 +25,12 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 
+console.log("------------------------------------------------");
+console.log("DEBUG CHECK:");
+console.log("Email User is:", EMAIL_USER);
+console.log("Password is:", EMAIL_PASS ? "Loaded (" + EMAIL_PASS.length + " chars)" : "MISSING / UNDEFINED");
+console.log("------------------------------------------------");
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -325,6 +331,8 @@ app.post("/reset-password", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+
+
 // --- 3. CORRECT ROUTE ORDER ---
 // We MUST define verifyToken *BEFORE* we use it.
 
@@ -344,6 +352,44 @@ const verifyToken = (req, res, next) => {
     });
 };
 
+// --- LIKE / UNLIKE POST ROUTE ---
+app.post("/posts/:postId/like", verifyToken, async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const userId = req.userId; // Get the logged-in user's ID
+
+        // 1. Find the post
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // 2. Check if user has already liked it
+        // We verify if the userId exists in the post.likes array
+        const index = post.likes.indexOf(userId);
+
+        if (index === -1) {
+            // LIKE: User ID is not in the array, so add it
+            post.likes.push(userId);
+        } else {
+            // UNLIKE: User ID is already there, so remove it
+            post.likes.splice(index, 1);
+        }
+
+        // 3. Save the updated post
+        await post.save();
+
+        // 4. Send back the new like count
+        res.status(200).json({ 
+            message: index === -1 ? "Post liked" : "Post unliked",
+            likesCount: post.likes.length 
+        });
+
+    } catch (err) {
+        console.error("Like Error:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 
 // --- 4. NEW CREATE POST ROUTE ---
 // This route is now AFTER verifyToken and uses 'upload.single()'
