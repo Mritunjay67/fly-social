@@ -1,3 +1,7 @@
+// modifyied git
+//git add .
+//git commit -m "Fixed security: Added .env and .gitignore"
+//git push origin main
 import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
