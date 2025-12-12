@@ -3,62 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FLY Social (was SecureShare)</title> <script src="https://cdn.tailwindcss.com"></script>
+    <title>FLY Social - Home</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
         .post-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
-        .encrypted-badge { background: linear-gradient(45deg, #00d4aa, #00b894); }
-        .ai-badge { background: linear-gradient(45deg, #fd79a8, #e84393); }
-        .story-ring { background: linear-gradient(45deg, #fd79a8, #fdcb6e, #6c5ce7); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none;  scrollbar-width: none; }
+        .line-clamp-2 {display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+        /* Modal Animation */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.2s ease-out forwards; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    
-<!--Logo and Profile --> 
+
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-
-            <!--1. Logo-->
-
             <div class="flex items-center space-x-4">
                 <img src="images/fly-logo.png" alt="FLY Social Logo" class="h-10 w-10">
                 <div class="relative">
-                    <input type="text" placeholder="Search users, posts..." 
-                           class="w-64 pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+                    <input type="text" placeholder="Search users..." class="w-64 pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
             </div>
+            
             <nav class="flex items-center space-x-6">
-                <button class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                <button onclick="window.location.href='Home.html'" class="p-2 hover:bg-gray-100 rounded-full text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                </button>
+
+                <button onclick="openCreatePostModal()" class="p-2 hover:bg-purple-50 rounded-xl text-gray-600 hover:text-purple-600 transition-all transform hover:scale-105 border border-transparent hover:border-purple-100" title="Create new post">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                 </button>
+
+                <button onclick="window.location.href='chat.html'" class="p-2 hover:bg-gray-100 rounded-full text-gray-600 relative">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                </button>
+
                 <div class="relative">
-                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center cursor-pointer" onclick="toggleUserMenu()">
+                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold cursor-pointer overflow-hidden" onclick="toggleUserMenu()">
                         <span id="userAvatar" class="text-white font-semibold">?</span>
                     </div>
                     <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                         <div class="py-2">
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile Settings</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Privacy Controls</a>
+                            <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</a>
                             <hr class="my-1">
-                            <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign Out</a>
+                            <a href="#" id="logoutButton" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign Out</a>
                         </div>
                     </div>
                 </div>
             </nav>
         </div>
     </header>
+
     <div class="max-w-6xl mx-auto px-4 py-6 flex gap-8">
-
-        <aside class="w-64 space-y-6 sticky top-20 self-start">
-
+        
+        <aside class="w-64 space-y-6 sticky top-20 self-start hidden md:block">
             <div class="bg-white rounded-xl p-6 post-shadow">
                 <div class="flex items-center space-x-2 mb-4">
                     <h3 id="welcome-message" class="font-semibold text-gray-800">Loading profile...</h3>
@@ -74,130 +85,328 @@
                 <h3 class="font-semibold text-gray-800 mb-4">Feed Preferences</h3>
                 <div class="space-y-3">
                     <label class="flex items-center space-x-3">
-                        <input type="checkbox" checked class="rounded text-purple-500">
-                        <span class="text-sm text-gray-600">Friends First</span>
-                    </label>
-                    <label class="flex items-center space-x-3">
-                        <input type="checkbox" checked class="rounded text-purple-500">
-                        <span class="text-sm text-gray-600">Interest-based</span>
+                        <input type="checkbox" id="feedFilter" class="rounded text-purple-500">
+                        <span class="text-sm text-gray-600">Following Only</span>
                     </label>
                 </div>
             </div>
-
         </aside>
+
         <main class="flex-1 space-y-6">
-
-            <div class="bg-white rounded-xl p-6 post-shadow">
-                <h3 class="font-semibold text-gray-800 mb-4">Stories</h3>
-                <div class="flex space-x-4 overflow-x-auto pb-2">
-                    <div class=" flex shrink-0 text-center">
-                        <div class="w-16 h-16 story-ring p-0.5 rounded-full mb-2">
-                            <div class="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-2xl">+</span>
-                            </div>
-                        </div>
-                        <span class="text-xs text-gray-600">Your Story</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl p-6 post-shadow">
-                <div class="flex items-center space-x-4 mb-4">
-                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-                        <span id="userAvatarSmall" class="text-white font-semibold">?</span>
-                    </div>
-                    <input id="postCaption" type="text" placeholder="What's on your mind?" 
-                           class="flex-1 bg-gray-100 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                </div>
-                
-                <div class="mb-4">
-                     <input id="postImageFile" type="file" accept="image/*,video/*" 
-                            class="flex-1 w-full text-sm text-gray-500
-                                    file:mr-4 file:py-2 file:px-4
-                                    file:rounded-full file:border-0
-                                    file:text-sm file:font-semibold
-                                    file:bg-purple-50 file:text-purple-700
-                                    hover:file:bg-purple-100">
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex space-x-4">
-                        </div>
-                    <button id="createPostButton" class="bg-purple-500 text-white px-6 py-2 rounded-full hover:bg-purple-600 transition-colors">
-                        Share
-                    </button>
-                </div>
-            </div>
             <div id="postFeedContainer" class="space-y-6">
                 </div>
-            </main>
-       <aside class="w-80 space-y-6 sticky top-20 self-start">
-             <div class="bg-white rounded-xl p-6 post-shadow">
-                   <h3 class="font-semibold text-gray-800 mb-4">Suggested for You</h3>
-             </div>
+        </main>
+
+        <aside class="w-80 space-y-6 sticky top-20 self-start hidden lg:block">
+            <div class="bg-white rounded-xl p-6 post-shadow">
+                 <h3 class="font-semibold text-gray-800 mb-4">Suggested for You</h3>
+                 </div>
         </aside>
-        </div> <script>
-        // (Just make sure toggleUserMenu is defined for the avatar button)
-         function toggleUserMenu() {
-             const menu = document.getElementById('userMenu');
-             menu.classList.toggle('hidden');
-         }
-         // (and any other functions your HTML calls)
-    </script>
+    </div>
+
+    <div id="createPostModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4 sm:p-8">
+        <div onclick="closeCreatePostModal()" class="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"></div>
+        
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[80vh] sm:h-[75vh] relative z-10 flex flex-col overflow-hidden animate-fade-in-up">
+            
+            <div class="h-12 border-b border-gray-200 flex justify-between items-center px-4 bg-white flex-shrink-0">
+                <button onclick="closeCreatePostModal()" class="text-gray-500 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <span class="font-bold text-gray-800">Create new post</span>
+                <button id="headerShareBtn" class="text-sm font-bold text-purple-600 hover:text-purple-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Share
+                </button>
+            </div>
+
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                <div class="w-full md:w-[65%] h-full bg-black flex items-center justify-center relative border-r border-gray-800/10">
+                    <div id="uploadPlaceholder" class="text-center">
+                        <svg class="w-16 h-16 text-white/80 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <p class="text-lg text-white mb-6">Drag photos here</p>
+                        <button onclick="document.getElementById('postImageFile').click()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors">Select from computer</button>
+                    </div>
+                    
+                    <img id="imagePreview" class="w-full h-full object-contain hidden">
+                    <input id="postImageFile" type="file" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    
+                    <button id="changeImageBtn" onclick="document.getElementById('postImageFile').click()" class="hidden absolute bottom-4 left-4 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 backdrop-blur-md" title="Change Image">
+                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
+                </div>
+
+                <div class="w-full md:w-[35%] h-full bg-white flex flex-col">
+                    <div class="p-4 flex items-center gap-3 border-b border-gray-50">
+                         <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden" id="modalUserAvatar">?</div>
+                         <span class="font-bold text-sm text-gray-800" id="modalUsername">username</span>
+                    </div>
+                    <div class="flex-1 px-4 py-2 relative">
+                        <textarea id="postCaption" class="w-full h-48 border-none focus:ring-0 text-gray-600 resize-none p-0 text-base" placeholder="Write a caption..."></textarea>
+                        
+                        <div class="flex justify-between items-center mt-2 border-b border-gray-100 pb-2">
+                             <button onclick="generateAICaption()" class="text-purple-600 text-xs font-bold hover:bg-purple-50 px-2 py-1 rounded flex items-center gap-1 transition-colors">
+                                ✨ AI Rewrite
+                             </button>
+                             <span class="text-xs text-gray-300">0/2,200</span>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-100">
+                        <div class="flex justify-between items-center p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
+                            <span class="text-sm text-gray-700">Add Location</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 z-[90] hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"></div>
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 relative z-10">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900">Delete?</h3>
+                <p class="text-sm text-gray-500 mt-2">Are you sure you want to delete this? This action cannot be undone.</p>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded-xl transition-colors">Cancel</button>
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl shadow-lg shadow-red-500/30 transition-all">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="postOptionsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div onclick="closePostOptions()" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+        <div class="bg-white rounded-xl shadow-2xl w-80 max-w-sm relative z-10 overflow-hidden transform transition-all scale-100">
+            <div class="flex flex-col text-center text-sm">
+                <button id="menuDeleteBtn" onclick="triggerPostDelete()" class="hidden py-3.5 border-b border-gray-200 text-red-600 font-bold hover:bg-gray-50 active:bg-gray-100">Delete Post</button>
+                <button onclick="alert('Reported!')" class="py-3.5 border-b border-gray-200 text-red-600 font-bold hover:bg-gray-50 active:bg-gray-100">Report</button>
+                <button onclick="copyCurrentPostLink()" class="py-3.5 border-b border-gray-200 text-gray-800 hover:bg-gray-50 active:bg-gray-100">Copy link</button>
+                <button onclick="closePostOptions()" class="py-3.5 text-gray-800 hover:bg-gray-50 active:bg-gray-100">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="commentPanel" class="fixed inset-0 z-50 hidden">
+        <div onclick="closeCommentPanel()" class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity opacity-0" id="commentPanelBackdrop"></div>
+        <div id="commentPanelContent" class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 class="font-bold text-lg text-gray-800">Comments</h3>
+                <button onclick="closeCommentPanel()" class="p-2 rounded-full hover:bg-gray-100 text-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="panel-comments-list" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+            
+            <div class="p-4 border-t border-gray-100 bg-gray-50 relative">
+                <div id="mention-suggestions" class="hidden absolute bottom-24 left-4 right-4 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-10">
+                    <div class="p-2 text-xs text-gray-400 border-b">Suggested People</div>
+                    <div onclick="insertMention('omkar09')" class="p-2 hover:bg-purple-50 cursor-pointer flex items-center gap-2">
+                        <div class="w-6 h-6 bg-purple-500 rounded-full text-white flex items-center justify-center text-xs">O</div>
+                        <span class="font-bold text-sm">@omkar09</span>
+                    </div>
+                </div>
+                <form id="panel-comment-form" class="relative">
+                    <div class="flex gap-2 items-end">
+                        <div class="relative flex-1">
+                            <textarea id="panel-comment-input" rows="1" placeholder="Add a comment..." class="w-full bg-white border border-gray-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none scrollbar-hide" oninput="checkForMention(this)"></textarea>
+                            <button type="button" onclick="triggerMention()" class="absolute right-3 bottom-3 text-gray-400 hover:text-purple-600"><span class="font-bold text-lg">@</span></button>
+                        </div>
+                        <button type="submit" class="bg-purple-600 text-white p-3 rounded-full hover:bg-purple-700 transition-colors shadow-md mb-0.5">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="shareModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center">
+        <div onclick="closeShareModal()" class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"></div>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm h-[400px] relative z-10 flex flex-col overflow-hidden mx-4">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-gray-900">Share to...</h3>
+                <button onclick="closeShareModal()" class="text-gray-500 hover:text-gray-800">✕</button>
+            </div>
+            <div id="shareContactsList" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+        </div>
+    </div>
+
     <script>
+    function toggleUserMenu() {
+        document.getElementById('userMenu').classList.toggle('hidden');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const token = localStorage.getItem('flySocialToken');
-        
-        // --- 1. AUTHENTICATION CHECK ---
-        // If there is no token, send the user back to the Login page.
-        if (!token) {
-            window.location.href = 'Login.html';
-            return;
-        }
+        if (!token) { window.location.href = 'Login.html'; return; }
 
-        // --- 2. GET ALL OUR NEW ELEMENTS ---
-        const createPostButton = document.getElementById('createPostButton');
-        const postCaptionInput = document.getElementById('postCaption');
-        const postImageUrlInput = document.getElementById('postImageUrl');
+        // --- DOM ELEMENTS ---
         const postFeedContainer = document.getElementById('postFeedContainer');
-        
-        // Get elements from your new UI
         const welcomeMessage = document.getElementById('welcome-message');
         const welcomeUsername = document.getElementById('welcome-username');
         const userAvatar = document.getElementById('userAvatar');
-        const userAvatarSmall = document.getElementById('userAvatarSmall');
-        
-        // Find the sign out button (from your new HTML)
-        const signOutButton = document.querySelector('a[href="#"][class*="text-red-600"]');
+        const logoutButton = document.getElementById('logoutButton');
 
-        // --- 3. LOGOUT FUNCTIONALITY ---
-        if (signOutButton) {
-            signOutButton.addEventListener('click', (e) => {
+        // --- LOGOUT LOGIC ---
+        if (logoutButton) {
+            logoutButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 localStorage.removeItem('flySocialToken');
                 window.location.href = 'Login.html';
             });
         }
         
-        // --- 4. FETCH USER PROFILE ---
-        // (We already had this logic, let's use it to populate the new UI)
+        // --- 1. MODAL & PREVIEW LOGIC ---
+        window.openCreatePostModal = function() {
+            // Populate User Info in Modal
+            const userAvatarMain = document.getElementById('userAvatar').innerHTML;
+            const usernameMain = document.getElementById('welcome-username') ? document.getElementById('welcome-username').textContent.replace('@', '') : 'me';
+            
+            if(document.getElementById('modalUserAvatar')) document.getElementById('modalUserAvatar').innerHTML = userAvatarMain;
+            if(document.getElementById('modalUsername')) document.getElementById('modalUsername').textContent = usernameMain;
+
+            document.getElementById('createPostModal').classList.remove('hidden');
+        }
+
+        window.closeCreatePostModal = function() {
+            document.getElementById('createPostModal').classList.add('hidden');
+        }
+
+        window.previewImage = function(input) {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const changeBtn = document.getElementById('changeImageBtn');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                    changeBtn.classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- 2. SUBMIT POST ---
+        document.getElementById('headerShareBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('headerShareBtn');
+            const captionInput = document.getElementById('postCaption');
+            const fileInput = document.getElementById('postImageFile');
+            const caption = captionInput.value;
+            const file = fileInput.files[0];
+
+            if (!file) { alert('Please select a photo first!'); return; }
+
+            // Loading State
+            const originalText = btn.textContent;
+            btn.textContent = "Sharing...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('caption', caption);
+            formData.append('imageFile', file);
+
+            try {
+                const response = await fetch('http://localhost:5000/createpost', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Reset & Close
+                    captionInput.value = '';
+                    fileInput.value = null;
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    document.getElementById('uploadPlaceholder').classList.remove('hidden');
+                    document.getElementById('changeImageBtn').classList.add('hidden');
+                    
+                    loadPosts();
+                    closeCreatePostModal();
+                } else {
+                    const data = await response.json();
+                    alert(`Error: ${data.message}`);
+                }
+            } catch (error) { console.error('Error:', error); } 
+            finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // --- 3. AI CAPTION ---
+        window.generateAICaption = async function() {
+            const input = document.getElementById('postCaption');
+            const fileInput = document.getElementById('postImageFile');
+            
+            const prompt = input.value.trim();
+            const file = fileInput.files[0];
+
+            if (!prompt && !file) { alert("Please upload a photo OR type a topic first!"); return; }
+
+            const originalPlaceholder = input.placeholder;
+            const originalValue = input.value;
+            
+            input.value = "";
+            input.placeholder = file ? "👀 Analyzing photo..." : "✨ Writing caption...";
+            input.disabled = true;
+
+            const formData = new FormData();
+            formData.append('prompt', prompt);
+            if (file) formData.append('imageFile', file);
+
+            try {
+                const response = await fetch('http://localhost:5000/ai/generate-caption', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    input.value = data.caption;
+                } else {
+                    alert("AI Error: " + data.message);
+                    input.value = originalValue;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to connect to AI.");
+                input.value = originalValue;
+            } finally {
+                input.placeholder = originalPlaceholder;
+                input.disabled = false;
+                input.focus();
+            }
+        };
+
+        // --- 4. FETCH PROFILE ---
         async function fetchProfile() {
             try {
                 const response = await fetch('http://localhost:5000/profile', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!response.ok) throw new Error('Failed to fetch profile');
-                
+                if (!response.ok) throw new Error('Failed');
                 const user = await response.json();
                 
-                // Populate the new UI elements
-                const userInitial = user.name ? user.name.charAt(0).toUpperCase() : '?';
                 welcomeMessage.textContent = `Hello, ${user.name}!`;
                 welcomeUsername.textContent = `@${user.username}`;
-                userAvatar.textContent = userInitial;
-                userAvatarSmall.textContent = userInitial;
-
+                
+                const initial = user.name.charAt(0).toUpperCase();
+                // Header Avatar
+                if (user.profilePicture) {
+                    userAvatar.innerHTML = `<img src="${user.profilePicture}" class="w-full h-full object-cover rounded-full">`;
+                    userAvatar.classList.add('overflow-hidden');
+                } else {
+                    userAvatar.textContent = initial;
+                }
             } catch (error) {
                 console.error('Auth Error:', error);
                 localStorage.removeItem('flySocialToken');
@@ -205,181 +414,306 @@
             }
         }
 
-        // --- 5. LOAD POSTS FUNCTION ---
+        // --- 5. LOAD POSTS (WITH FIX FOR SHARE BUTTON) ---
         async function loadPosts() {
-            postFeedContainer.innerHTML = '<p class="text-center text-gray-500">Loading feed...</p>';
-            
+            postFeedContainer.innerHTML = '<div class="flex justify-center p-10"><div class="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div></div>';
             try {
-
-                // 1. Get current user ID from token to check if we liked the post
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const currentUserId = payload.id;
+                const filterBox = document.getElementById('feedFilter');
+                const filter = (filterBox && filterBox.checked) ? 'following' : 'all';
 
-                const response = await fetch('http://localhost:5000/getposts', {
+                const response = await fetch(`http://localhost:5000/getposts?filter=${filter}`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (!response.ok) throw new Error('Failed to fetch posts');
-                
                 const posts = await response.json();
-                postFeedContainer.innerHTML = ''; // Clear loading message
+                postFeedContainer.innerHTML = ''; 
 
                 if (posts.length === 0) {
-                    postFeedContainer.innerHTML = '<p class="text-center text-gray-500">No posts yet. Be the first!</p>';
+                    postFeedContainer.innerHTML = '<p class="text-center text-gray-500 py-10">No posts yet.</p>';
                     return;
                 }
 
-                // Loop through posts and create HTML that matches your new UI
                 posts.forEach(post => {
                     const postElement = document.createElement('article');
-                    postElement.className = 'bg-white rounded-xl post-shadow overflow-hidden';
-                    
+                    postElement.className = 'bg-white rounded-xl post-shadow overflow-hidden mb-6';
+                    const authorName = post.user ? post.user.name : 'Unknown';
                     const authorUsername = post.user ? post.user.username : 'unknown';
-                    const authorName = post.user ? post.user.name : 'Unknown User';
                     const authorInitial = authorName.charAt(0).toUpperCase() || '?';
-
-                    // Check if YOU liked this post
                     const isLiked = post.likes.includes(currentUserId);
-                    const heartColorClass = isLiked ? 'text-red-500 fill-current' : 'text-gray-600';
+                    const isMyPost = post.user._id === currentUserId;
+
+                    // --- 🔥 CRITICAL FIX FOR SHARE BUTTON ---
+                    // Replaces quotes and newlines so the HTML doesn't break
+                    const safeCaption = (post.caption || '')
+                        .replace(/'/g, "\\'")
+                        .replace(/"/g, '&quot;')
+                        .replace(/\n/g, ' '); 
 
                     postElement.innerHTML = `
-                       <div class="p-6 pb-4">
-                            <div class="flex items-center justify-between mb-4">
+                        <div class="p-4">
+                            <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white font-semibold">${authorInitial}</span>
+                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center overflow-hidden text-white font-bold">
+                                        ${post.user.profilePicture 
+                                        ? `<img src="${post.user.profilePicture}" class="w-full h-full object-cover">` 
+                                        : authorInitial}
                                     </div>
                                     <div>
-                                        <h4 class="font-semibold text-gray-800">${authorName}</h4>
-                                        <p class="text-sm text-gray-500">@${authorUsername} &bull; ${new Date(post.createdAt).toLocaleString()}</p>
+                                        <h4 class="font-semibold text-gray-800 text-sm hover:underline cursor-pointer">
+                                            <a href="profile.html?id=${post.user._id}">${authorName}</a>
+                                        </h4>
+                                        <p class="text-xs text-gray-500">@${authorUsername}</p>
                                     </div>
                                 </div>
+                                <button onclick="openPostOptions('${post._id}', ${isMyPost})" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+                                </button>
                             </div>
-                            ${post.caption ? `<p class="text-gray-800 mb-4">${post.caption}</p>` : ''}
                         </div>
-                        <div class="h-96 bg-gray-100">
-                            <img src="${post.imageUrl}" alt="Post image" class="h-full w-full object-cover">
+                        <div class="bg-gray-100 aspect-w-1 aspect-h-1" style="min-height: 300px;">
+                            <img src="${post.imageUrl}" alt="Post image" class="w-full h-full object-contain bg-black/5">
                         </div>
-                        <div class="p-6 pt-4">
-                            <div class="flex items-center space-x-6">
+                        <div class="p-4">
+                            <div class="flex items-center space-x-4 mb-3">
+                                <button onclick="toggleLike('${post._id}')" class="flex items-center space-x-1 group">
+                                    <svg id="heart-icon-${post._id}" class="w-7 h-7 ${isLiked ? 'text-red-500 fill-current' : 'text-gray-600'} group-hover:text-red-500 transition-colors" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                </button>
+                                <button onclick="openCommentPanel('${post._id}')" class="text-gray-600 hover:text-purple-500">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                </button>
                                 
-                                <button onclick="toggleLike('${post._id}')" class="flex items-center space-x-2 transition-colors group">
-                                    <svg id="heart-icon-${post._id}" class="w-6 h-6 ${heartColorClass} group-hover:text-red-500" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                    </svg>
-                                    <span id="likes-count-${post._id}" class="text-sm text-gray-600">${post.likes.length}</span>
-                                </button>
-
-                                <button class="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                    <span class="text-sm">0</span>
+                                <button onclick="sharePost('${post.imageUrl}', '${safeCaption}')" class="text-gray-600 hover:text-green-500">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
                                 </button>
                             </div>
+                            <div class="font-bold text-sm mb-2"><span id="likes-count-${post._id}">${post.likes.length}</span> likes</div>
+                            ${post.caption ? (() => {
+                                const isLong = post.caption.length > 100;
+                                return `
+                                    <div class="text-sm text-gray-800 mb-2">
+                                        <span class="font-bold mr-1">${authorUsername}</span>
+                                        <span id="caption-text-${post._id}" class="${isLong ? 'line-clamp-2' : ''} break-words">
+                                            ${post.caption}
+                                        </span>
+                                        ${isLong ? `
+                                            <button id="caption-more-${post._id}" onclick="toggleCaption('${post._id}')" class="text-gray-500 text-xs font-semibold ml-1 cursor-pointer hover:text-gray-700">
+                                                more
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            })() : ''}
+                            <div class="text-gray-400 text-xs mt-2 uppercase tracking-wide">${new Date(post.createdAt).toLocaleDateString()}</div>
                         </div>
                     `;
                     postFeedContainer.appendChild(postElement);
                 });
-
-            } catch (error) {
-                console.error('Load Posts Error:', error);
-                postFeedContainer.innerHTML = '<p class="text-center text-red-500">Error loading feed. Please refresh.</p>';
-            }
+            } catch (error) { console.error('Load Posts Error:', error); }
         }
-        
-        // --- 6. CREATE POST FUNCTIONALITY (NEW VERSION FOR FILE UPLOADS) ---
-        createPostButton.addEventListener('click', async (e) => {
-            e.preventDefault();
+
+        // --- 6. SHARE POST LOGIC ---
+        window.currentPostToShare = null;
+
+        window.sharePost = function(imageUrl, caption) {
+            window.currentPostToShare = { imageUrl, caption };
             
-            // 1. Get the caption text
-            const caption = postCaptionInput.value;
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('hidden');
             
-            // 2. Get the actual file from the new input
-            // We get postImageUrlInput from line 90 but we need postImageFile
-            const fileInput = document.getElementById('postImageFile');
-            const file = fileInput.files[0]; // This is the file object
+            loadShareContacts();
+        };
 
-            if (!file) {
-                alert('Please select an image or video file to upload.');
-                return;
-            }
+        window.closeShareModal = function() {
+            document.getElementById('shareModal').classList.add('hidden');
+            window.currentPostToShare = null;
+        };
 
-            // 3. Create a FormData object to send the file
-            const formData = new FormData();
-            formData.append('caption', caption);      // Add the text
-            formData.append('imageFile', file);     // Add the file
-
-            // 4. Send the FormData to the server
+        async function loadShareContacts() {
+            const list = document.getElementById('shareContactsList');
+            list.innerHTML = '<div class="text-center text-gray-400">Loading friends...</div>';
+            
             try {
-                const response = await fetch('http://localhost:5000/createpost', {
-                    method: 'POST',
-                    headers: {
-                        // DO NOT add 'Content-Type'. The browser sets it
-                        // automatically for FormData.
-                        'Authorization': `Bearer ${token}` 
-                    },
-                    body: formData // Send the form data
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const myId = payload.id;
+                const res = await fetch(`http://localhost:5000/users/${myId}/connections?type=following`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-
-                if (response.ok) {
-                    // Success
-                    postCaptionInput.value = '';
-                    fileInput.value = null; // Clear the file input
-                    loadPosts(); // Refresh the feed
-                } else {
-                    const data = await response.json();
-                    alert(`Error creating post: ${data.message}`);
+                const users = await res.json();
+                
+                list.innerHTML = '';
+                if (users.length === 0) {
+                    list.innerHTML = '<div class="text-center text-gray-400">Follow people to share with them!</div>';
+                    return;
                 }
-            } catch (error) {
-                console.error('Create Post Error:', error);
-                alert('Error connecting to server.');
-            }
-        });
 
-        // --- 7. INITIAL LOAD ---
-        fetchProfile(); // Load user info
-        loadPosts();    // Load the post feed
+                users.forEach(u => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl cursor-pointer border-b border-gray-50";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden">
+                                ${u.profilePicture ? `<img src="${u.profilePicture}" class="w-full h-full object-cover">` : u.name.charAt(0)}
+                            </div>
+                            <p class="font-bold text-sm text-gray-800">${u.username}</p>
+                        </div>
+                        <button onclick="sendPostToChat('${u._id}', this)" class="px-4 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-full hover:bg-purple-700">Send</button>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (err) { console.error(err); }
+        }
 
-        // --- 8. TOGGLE LIKE FUNCTION ---
-        // We attach this to the window object so the HTML onclick can see it
+        window.sendPostToChat = function(receiverId, btn) {
+            if (!window.currentPostToShare) return;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const myId = payload.id;
+            
+            const messageData = {
+                senderId: myId,
+                receiverId: receiverId,
+                text: "", 
+                imageUrl: window.currentPostToShare.imageUrl, 
+                createdAt: new Date()
+            };
+            
+            // Send via Socket
+            const socketInstance = io("http://localhost:5000");
+            socketInstance.emit("send_message", messageData);
+
+            // UI Feedback
+            btn.textContent = "Sent";
+            btn.classList.replace("bg-purple-600", "bg-green-500");
+            btn.disabled = true;
+        };
+
+        // --- GLOBAL HELPERS (Like, Delete, More/Less) ---
         window.toggleLike = async function(postId) {
             try {
                 const response = await fetch(`http://localhost:5000/posts/${postId}/like`, {
                     method: 'POST',
-                    headers: { 
-                        'Authorization': `Bearer ${token}` 
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // Update the number
                     const countElement = document.getElementById(`likes-count-${postId}`);
-                    if (countElement) countElement.textContent = data.likesCount;
-
-                    // Update the Heart Icon color
                     const iconElement = document.getElementById(`heart-icon-${postId}`);
+                    if (countElement) countElement.textContent = data.likesCount;
                     if (iconElement) {
                         if (data.message === "Post liked") {
-                            iconElement.classList.remove('text-gray-600');
-                            iconElement.classList.add('text-red-500', 'fill-current');
+                            iconElement.classList.replace('text-gray-600', 'text-red-500');
+                            iconElement.classList.add('fill-current');
                             iconElement.setAttribute('fill', 'currentColor');
                         } else {
-                            iconElement.classList.remove('text-red-500', 'fill-current');
-                            iconElement.classList.add('text-gray-600');
+                            iconElement.classList.replace('text-red-500', 'text-gray-600');
+                            iconElement.classList.remove('fill-current');
                             iconElement.setAttribute('fill', 'none');
                         }
                     }
                 }
-            } catch (error) {
-                console.error('Like Error:', error);
-            }
+            } catch (error) { console.error('Like Error:', error); }
         };
+
+        window.toggleCaption = function(postId) {
+            const captionEl = document.getElementById(`caption-text-${postId}`);
+            const btn = document.getElementById(`caption-more-${postId}`);
+            captionEl.classList.toggle('line-clamp-2');
+            btn.textContent = captionEl.classList.contains('line-clamp-2') ? "more" : "less";
+        };
+
+        // Modal Helpers
+        window.currentOptionsPostId = null;
+        window.openPostOptions = function(postId, isMyPost) {
+            window.currentOptionsPostId = postId;
+            const deleteBtn = document.getElementById('menuDeleteBtn');
+            if(isMyPost) deleteBtn.classList.remove('hidden');
+            else deleteBtn.classList.add('hidden');
+            document.getElementById('postOptionsModal').classList.remove('hidden');
+        };
+        window.closePostOptions = function() {
+            document.getElementById('postOptionsModal').classList.add('hidden');
+            window.currentOptionsPostId = null;
+        };
+        window.triggerPostDelete = function() {
+            const postIdToDelete = window.currentOptionsPostId;
+            closePostOptions();
+            if (postIdToDelete) openDeleteModal(postIdToDelete, null, 'post');
+        };
+        
+        window.pendingDelete = null;
+        window.openDeleteModal = function(id1, id2, type) {
+            window.pendingDelete = { id1, id2, type };
+            document.getElementById('deleteModal').classList.remove('hidden');
+        };
+        window.closeDeleteModal = function() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            window.pendingDelete = null;
+        };
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (window.pendingDelete) {
+                const { id1, id2, type } = window.pendingDelete;
+                try {
+                    const url = type === 'post' ? `http://localhost:5000/posts/${id1}` : `http://localhost:5000/posts/${id1}/comments/${id2}`;
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        if(type === 'post') loadPosts();
+                        else openCommentPanel(id1);
+                    }
+                } catch(err) { console.error(err); }
+                closeDeleteModal();
+            }
+        });
+
+        // Comment Panel Helpers
+        window.currentPanelPostId = null;
+        window.openCommentPanel = async function(postId) {
+            currentPanelPostId = postId;
+            const panel = document.getElementById('commentPanel');
+            const content = document.getElementById('commentPanelContent');
+            const backdrop = document.getElementById('commentPanelBackdrop');
+            const list = document.getElementById('panel-comments-list');
+            panel.classList.remove('hidden');
+            setTimeout(() => { backdrop.classList.remove('opacity-0'); content.classList.remove('translate-x-full'); }, 10);
+            list.innerHTML = '<p class="text-center p-4">Loading...</p>';
+            const response = await fetch(`http://localhost:5000/posts/${postId}/comments`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const comments = await response.json();
+            list.innerHTML = '';
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            comments.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'flex gap-3 mb-4';
+                div.innerHTML = `<div class="font-bold text-sm">${c.user.username}</div><div class="text-sm">${c.text}</div>`;
+                list.appendChild(div);
+            });
+        };
+        window.closeCommentPanel = function() {
+            document.getElementById('commentPanelBackdrop').classList.add('opacity-0');
+            document.getElementById('commentPanelContent').classList.add('translate-x-full');
+            setTimeout(() => { document.getElementById('commentPanel').classList.add('hidden'); }, 300);
+        };
+        
+        document.getElementById('panel-comment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('panel-comment-input');
+            if(!input.value.trim()) return;
+            await fetch(`http://localhost:5000/posts/${currentPanelPostId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ text: input.value })
+            });
+            input.value = '';
+            openCommentPanel(currentPanelPostId);
+        });
+
+        // Initialize App
+        fetchProfile();
+        loadPosts();
     });
-    </script>
-    <script>(function(){
-        function c(){
-            var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9741ee63d25d8a2a',t:'MTc1NjAyODg3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</script>
 </body>
 </html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLY Social - Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        /* Hide scrollbar */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none;  scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-4 cursor-pointer" onclick="window.location.href='Home.html'">
+                <img src="images/fly-logo.png" alt="Logo" class="h-10 w-10">
+            </div>
+            <div class="relative hidden md:block">
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search users..." 
+                       class="w-64 pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <div id="searchResults" class="hidden absolute top-12 left-0 w-full bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50"></div>
+            </div>
+            <nav class="flex items-center space-x-6">
+                <button onclick="window.location.href='Home.html'" class="p-2 rounded-full hover:bg-gray-100 text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                </button>
+                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold cursor-pointer" id="navUserAvatar">?</div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center md:items-start gap-8">
+            <div class="w-32 h-32 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-lg overflow-hidden" id="profileAvatar">?</div>
+            <div class="flex-1 text-center md:text-left">
+                <div class="flex flex-col md:flex-row items-center gap-4 mb-4">
+                    <h1 class="text-2xl font-bold text-gray-900" id="profileUsername">@username</h1>
+                    <button id="followBtn" onclick="toggleFollow()" class="hidden px-6 py-1.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors text-sm">Follow</button>
+                    <button id="unfollowBtn" onclick="toggleFollow()" class="hidden px-6 py-1.5 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300 transition-colors text-sm">Unfollow</button>
+                    <button id="editProfileBtn" class="hidden px-6 py-1.5 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition-colors text-sm">Edit Profile</button>
+                    <button id="messageBtn" class="hidden px-6 py-1.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm">Message</button>
+                </div>
+                
+                <div class="flex justify-center md:justify-start gap-8 mb-6 text-sm">
+                    <div class="text-center md:text-left"><span class="font-bold text-gray-900 block text-lg" id="postsCount">0</span> posts</div>
+                    
+                    <div class="text-center md:text-left cursor-pointer hover:opacity-70 transition-opacity" onclick="openFollowList('followers')">
+                        <span class="font-bold text-gray-900 block text-lg" id="followersCount">0</span> followers
+                    </div>
+                    <div class="text-center md:text-left cursor-pointer hover:opacity-70 transition-opacity" onclick="openFollowList('following')">
+                        <span class="font-bold text-gray-900 block text-lg" id="followingCount">0</span> following
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-gray-900" id="profileName">Full Name</h2>
+                    <p class="text-gray-600 text-sm mt-1" id="profileBio">Welcome to my profile!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-200 pt-8">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">Posts</h3>
+            <div id="profilePostsGrid" class="grid grid-cols-3 gap-1 sm:gap-4"></div>
+            <p id="noPostsMsg" class="hidden text-center text-gray-500 py-10">No posts yet.</p>
+        </div>
+    </main>
+
+    <div id="postModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 sm:p-8">
+        <div onclick="closePostModal()" class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"></div>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[85vh] relative z-10 flex overflow-hidden">
+            <div class="hidden md:flex w-[60%] bg-black items-center justify-center">
+                <img id="modalImg" src="" class="max-h-full max-w-full object-contain">
+            </div>
+            <div class="w-full md:w-[40%] flex flex-col bg-white h-full">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                    <div class="flex items-center space-x-3">
+                        <div id="modalUserAvatar" class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden"></div>
+                        <span id="modalUsername" class="font-bold text-gray-900 text-sm"></span>
+                    </div>
+                    <button id="modalDeleteBtn" class="text-red-500 hover:text-red-700 text-xs font-bold hidden">DELETE POST</button>
+                </div>
+                <div id="modalCommentsList" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"></div>
+                <div class="border-t border-gray-100 p-4 bg-white">
+                    <div class="flex items-center gap-4 mb-2">
+                        <button onclick="toggleModalLike()" id="modalHeartBtn">
+                            <svg id="modalHeartIcon" class="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        </button>
+                        <span id="modalLikesCount" class="font-bold text-sm">0 likes</span>
+                    </div>
+                    <form onsubmit="submitModalComment(event)" class="flex items-center border-t border-gray-100 pt-3 mt-2">
+                        <input type="text" id="modalCommentInput" placeholder="Add a comment..." class="flex-1 bg-transparent text-sm focus:outline-none" autocomplete="off">
+                        <button type="submit" class="text-blue-500 font-bold text-sm ml-2">Post</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editProfileModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div onclick="closeEditModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md relative z-10 transform transition-all scale-100">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Edit Profile</h3>
+            <form id="editProfileForm" class="space-y-4">
+                <div class="flex flex-col items-center mb-4">
+                    <div class="w-24 h-24 rounded-full bg-gray-200 overflow-hidden mb-2 border-2 border-purple-500 relative group cursor-pointer">
+                        <img id="previewImage" src="" class="w-full h-full object-cover hidden">
+                        <div id="previewInitials" class="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-500">?</div>
+                        <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center text-white text-xs font-bold" onclick="document.getElementById('profilePicInput').click()">CHANGE</div>
+                    </div>
+                    <input type="file" id="profilePicInput" accept="image/*" class="hidden" onchange="previewFile()">
+                </div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label><input type="text" id="editName" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Bio</label><textarea id="editBio" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea></div>
+                <div class="flex gap-3 mt-6"><button type="button" onclick="closeEditModal()" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancel</button><button type="submit" class="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-xl shadow-lg">Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="followListModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div onclick="closeFollowListModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+        
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md h-[400px] relative z-10 flex flex-col overflow-hidden m-4">
+            
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 id="followListTitle" class="font-bold text-lg text-gray-900">Followers</h3>
+                <button onclick="closeFollowListModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="p-3 border-b border-gray-50">
+                <input type="text" placeholder="Search..." class="w-full bg-gray-100 rounded-lg px-4 py-2 text-sm focus:outline-none text-gray-700">
+            </div>
+
+            <div id="followListContent" class="flex-1 overflow-y-auto p-2 space-y-1">
+                </div>
+        </div>
+    </div>
+
+    <div id="followListModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div onclick="closeFollowListModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+        
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md h-[400px] relative z-10 flex flex-col overflow-hidden m-4">
+            
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 id="followListTitle" class="font-bold text-lg text-gray-900">Followers</h3>
+                <button onclick="closeFollowListModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="p-3 border-b border-gray-50">
+                <input type="text" placeholder="Search..." class="w-full bg-gray-100 rounded-lg px-4 py-2 text-sm focus:outline-none text-gray-700">
+            </div>
+
+            <div id="followListContent" class="flex-1 overflow-y-auto p-2 space-y-1">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // GLOBAL VARS
+        let profilePosts = [];
+        let currentModalPostId = null;
+
+        // --- SEARCH ---
+        let searchTimeout = null;
+        window.handleSearch = function() {
+            const query = document.getElementById('searchInput').value;
+            const resultsBox = document.getElementById('searchResults');
+            const token = localStorage.getItem('flySocialToken');
+            if (searchTimeout) clearTimeout(searchTimeout);
+            if (!query.trim()) { resultsBox.classList.add('hidden'); return; }
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`http://localhost:5000/search?query=${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    const users = await res.json();
+                    resultsBox.innerHTML = ''; resultsBox.classList.remove('hidden');
+                    if (users.length === 0) resultsBox.innerHTML = '<div class="p-3 text-sm text-gray-500 text-center">No users found</div>';
+                    else {
+                        users.forEach(u => {
+                            const div = document.createElement('div');
+                            div.className = "flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50";
+                            div.onclick = () => window.location.href = `profile.html?id=${u._id}`;
+                            div.innerHTML = `<div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xs overflow-hidden">${u.profilePicture ? `<img src="${u.profilePicture}" class="w-full h-full object-cover">` : u.name.charAt(0)}</div><div><p class="text-sm font-bold text-gray-800">${u.username}</p></div>`;
+                            resultsBox.appendChild(div);
+                        });
+                    }
+                } catch (e) {}
+            }, 300);
+        };
+        document.addEventListener('click', (e) => { if (!document.querySelector('.relative').contains(e.target)) document.getElementById('searchResults').classList.add('hidden'); });
+
+        // --- MAIN ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('flySocialToken');
+            if (!token) { window.location.href = 'Login.html'; return; }
+
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const currentUserId = payload.id;
+            const urlParams = new URLSearchParams(window.location.search);
+            const profileId = urlParams.get('id') || currentUserId; 
+            let isFollowing = false;
+
+            // 1. Load User Info
+            try {
+                const res = await fetch(`http://localhost:5000/users/${profileId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const user = await res.json();
+                document.getElementById('profileUsername').textContent = `@${user.username}`;
+                document.getElementById('profileName').textContent = user.name;
+                if(user.bio) document.getElementById('profileBio').textContent = user.bio;
+                document.getElementById('followersCount').textContent = user.followers.length;
+                document.getElementById('followingCount').textContent = user.following.length;
+                const avatarEl = document.getElementById('profileAvatar');
+                const navAvatar = document.getElementById('navUserAvatar');
+                if (user.profilePicture) {
+                    const img = `<img src="${user.profilePicture}" class="w-full h-full object-cover">`;
+                    avatarEl.innerHTML = img; navAvatar.innerHTML = img; navAvatar.classList.add('overflow-hidden');
+                } else {
+                    avatarEl.textContent = user.name.charAt(0).toUpperCase();
+                    navAvatar.textContent = user.name.charAt(0).toUpperCase();
+                }
+                // Button Logic
+                const followBtn = document.getElementById('followBtn');
+                const unfollowBtn = document.getElementById('unfollowBtn');
+                const editBtn = document.getElementById('editProfileBtn');
+                const messageBtn = document.getElementById('messageBtn');
+
+                // First, hide everything to start fresh
+                followBtn.classList.add('hidden');
+                unfollowBtn.classList.add('hidden');
+                editBtn.classList.add('hidden');
+                messageBtn.classList.add('hidden');
+
+                if (profileId === currentUserId) {
+                    // It's ME
+                    editBtn.classList.remove('hidden');
+                    editBtn.onclick = () => openEditModal(user);
+                } else {
+                    // It's SOMEONE ELSE
+                    isFollowing = user.followers.includes(currentUserId);
+                    if (isFollowing) unfollowBtn.classList.remove('hidden');
+                    else followBtn.classList.remove('hidden');
+
+                    // Show Message Button
+                    messageBtn.classList.remove('hidden');
+                    messageBtn.onclick = () => window.location.href = `chat.html?chatWith=${user._id}`;
+                
+                }
+            } catch (e) { console.error(e); }
+
+            // 2. Load Posts
+            try {
+                const res = await fetch(`http://localhost:5000/posts/user/${profileId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                profilePosts = await res.json();
+                document.getElementById('postsCount').textContent = profilePosts.length;
+                if (profilePosts.length === 0) document.getElementById('noPostsMsg').classList.remove('hidden');
+                else {
+                    const grid = document.getElementById('profilePostsGrid');
+                    profilePosts.forEach((post, index) => {
+                        const div = document.createElement('div');
+                        div.className = "relative aspect-square bg-gray-100 group overflow-hidden cursor-pointer hover:opacity-90 transition-opacity";
+                        div.onclick = () => openPostModal(index);
+                        div.innerHTML = `<img src="${post.imageUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"><div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center text-white gap-4 font-bold"><span class="flex items-center gap-1"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> ${post.likes.length}</span></div>`;
+                        grid.appendChild(div);
+                    });
+                }
+            } catch (e) { console.error(e); }
+
+            // Naya Code (Paste this):
+            window.updateFollowButton = function() {
+                const followBtn = document.getElementById('followBtn');
+                const unfollowBtn = document.getElementById('unfollowBtn');
+                
+                if (isFollowing) {
+                    followBtn.classList.add('hidden');
+                    unfollowBtn.classList.remove('hidden');
+                } else {
+                    followBtn.classList.remove('hidden');
+                    unfollowBtn.classList.add('hidden');
+                }
+            }
+
+            window.toggleFollow = async function() {
+                const action = isFollowing ? 'unfollow' : 'follow';
+                const res = await fetch(`http://localhost:5000/users/${profileId}/${action}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    isFollowing = !isFollowing;
+                    updateFollowButton();
+                    const el = document.getElementById('followersCount');
+                    el.textContent = isFollowing ? parseInt(el.textContent)+1 : parseInt(el.textContent)-1;
+                }
+            }
+        });
+
+        // --- POST MODAL ---
+        window.openPostModal = async function(index) {
+            const post = profilePosts[index];
+            currentModalPostId = post._id;
+            const token = localStorage.getItem('flySocialToken');
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            
+            document.getElementById('modalImg').src = post.imageUrl;
+            document.getElementById('modalUsername').textContent = post.user.username;
+            const avatar = document.getElementById('modalUserAvatar');
+            if (post.user.profilePicture) avatar.innerHTML = `<img src="${post.user.profilePicture}" class="w-full h-full object-cover">`;
+            else avatar.textContent = post.user.name.charAt(0);
+            const isLiked = post.likes.includes(payload.id);
+            updateModalHeart(isLiked, post.likes.length);
+            const deleteBtn = document.getElementById('modalDeleteBtn');
+            if (payload.id === post.user._id) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.onclick = () => deletePostFromModal(post._id);
+            } else { deleteBtn.classList.add('hidden'); }
+
+            const list = document.getElementById('modalCommentsList');
+            list.innerHTML = `<div class="flex gap-3 items-start mb-4"><div class="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold overflow-hidden">${post.user.profilePicture ? `<img src="${post.user.profilePicture}" class="w-full h-full object-cover">` : post.user.name.charAt(0)}</div><div class="text-sm"><span class="font-bold mr-1">${post.user.username}</span><span>${post.caption}</span></div></div><div id="loadingComments" class="text-center text-gray-400 text-xs">Loading comments...</div>`;
+            document.getElementById('postModal').classList.remove('hidden');
+            try {
+                const res = await fetch(`http://localhost:5000/posts/${post._id}/comments`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const comments = await res.json();
+                document.getElementById('loadingComments').remove();
+                comments.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = "flex gap-3 items-start mb-3";
+                    div.innerHTML = `<div class="w-8 h-8 bg-gray-100 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold overflow-hidden">${c.user.name.charAt(0)}</div><div class="text-sm"><span class="font-bold mr-1">${c.user.username}</span><span class="text-gray-700">${c.text}</span></div>`;
+                    list.appendChild(div);
+                });
+            } catch (e) {}
+        };
+        window.closePostModal = function() { document.getElementById('postModal').classList.add('hidden'); };
+        window.updateModalHeart = function(isLiked, count) {
+            const icon = document.getElementById('modalHeartIcon');
+            document.getElementById('modalLikesCount').textContent = count + ' likes';
+            if (isLiked) { icon.classList.add('text-red-500', 'fill-current'); icon.classList.remove('text-gray-600'); }
+            else { icon.classList.remove('text-red-500', 'fill-current'); icon.classList.add('text-gray-600'); }
+        };
+        window.toggleModalLike = async function() {
+            const token = localStorage.getItem('flySocialToken');
+            try {
+                const res = await fetch(`http://localhost:5000/posts/${currentModalPostId}/like`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateModalHeart(data.message === "Post liked", data.likesCount);
+                }
+            } catch(e) {}
+        };
+        window.submitModalComment = async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('modalCommentInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const token = localStorage.getItem('flySocialToken');
+            try {
+                const res = await fetch(`http://localhost:5000/posts/${currentModalPostId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
+                if (res.ok) {
+                    const c = await res.json();
+                    const div = document.createElement('div');
+                    div.className = "flex gap-3 items-start mb-3";
+                    div.innerHTML = `<div class="w-8 h-8 bg-gray-100 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold">${c.user.username.charAt(0)}</div><div class="text-sm"><span class="font-bold mr-1">${c.user.username}</span><span>${c.text}</span></div>`;
+                    document.getElementById('modalCommentsList').appendChild(div);
+                    input.value = '';
+                }
+            } catch(e) {}
+        };
+        window.deletePostFromModal = async function(postId) {
+            if(!confirm("Delete this post?")) return;
+            const token = localStorage.getItem('flySocialToken');
+            try {
+                const res = await fetch(`http://localhost:5000/posts/${postId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) window.location.reload();
+            } catch(e) {}
+        };
+
+       // --- FOLLOW LIST LOGIC ---
+        window.openFollowList = async function(type) {
+            const modal = document.getElementById('followListModal');
+            const title = document.getElementById('followListTitle');
+            const list = document.getElementById('followListContent');
+            const token = localStorage.getItem('flySocialToken');
+
+            // 1. Setup Modal
+            title.textContent = type.charAt(0).toUpperCase() + type.slice(1); // "Followers" or "Following"
+            modal.classList.remove('hidden');
+            list.innerHTML = '<div class="flex justify-center p-4"><div class="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div></div>';
+
+            try {
+                // 2. Get current profile ID from URL or Token
+                const urlParams = new URLSearchParams(window.location.search);
+                const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+                const profileId = urlParams.get('id') || tokenPayload.id;
+                const isMyProfile = profileId === tokenPayload.id;
+
+                // 3. Fetch Data
+                const response = await fetch(`http://localhost:5000/users/${profileId}/connections?type=${type}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await response.json();
+
+                list.innerHTML = '';
+
+                if (users.length === 0) {
+                    list.innerHTML = `<div class="text-center text-gray-400 mt-10 text-sm">No ${type} yet.</div>`;
+                } else {
+                    users.forEach(u => {
+                        const initial = u.name.charAt(0).toUpperCase();
+                        
+                        // Determine button text/action based on context
+                        // (Simplified logic: If viewing my own "Following", show "Following" button)
+                        let btnHTML = '';
+                        if (isMyProfile && type === 'following') {
+                            btnHTML = `<button onclick="toggleFollowFromList('${u._id}', this)" class="px-4 py-1.5 bg-gray-100 text-gray-800 font-bold rounded-lg text-xs hover:bg-red-100 hover:text-red-600 transition-colors">Following</button>`;
+                        } else if (isMyProfile && type === 'followers') {
+                             btnHTML = `<button class="px-4 py-1.5 bg-gray-100 text-gray-800 font-bold rounded-lg text-xs hover:bg-red-100 hover:text-red-600 transition-colors">Remove</button>`;
+                        }
+
+                        const div = document.createElement('div');
+                        div.className = "flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors";
+                        div.innerHTML = `
+                            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='profile.html?id=${u._id}'">
+                                <div class="w-10 h-10 bg-purple-500 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                                    ${u.profilePicture ? `<img src="${u.profilePicture}" class="w-full h-full object-cover">` : initial}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900 leading-none">${u.username}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">${u.name}</p>
+                                </div>
+                            </div>
+                            ${btnHTML}
+                        `;
+                        list.appendChild(div);
+                    });
+                }
+            } catch (err) { console.error(err); }
+        };
+
+        window.closeFollowListModal = function() {
+            document.getElementById('followListModal').classList.add('hidden');
+        };
+        
+        // Helper for the button inside the list
+        window.toggleFollowFromList = async function(targetId, btn) {
+             // Reuse existing follow logic or implement simple toggle
+             // For now, let's assume they want to Unfollow if they click "Following"
+             if(confirm("Unfollow this user?")) {
+                 const token = localStorage.getItem('flySocialToken');
+                 try {
+                     await fetch(`http://localhost:5000/users/${targetId}/unfollow`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                     });
+                     btn.textContent = "Follow";
+                     btn.classList.remove('bg-gray-100', 'text-gray-800');
+                     btn.classList.add('bg-purple-600', 'text-white');
+                     // Ideally, reload to update stats, or just UI update
+                 } catch(e) { console.error(e); }
+             }
+        }
+        // --- EDIT PROFILE ---
+        window.openEditModal = function(user) {
+            document.getElementById('editName').value = user.name;
+            document.getElementById('editBio').value = user.bio || '';
+            const img = document.getElementById('previewImage');
+            const init = document.getElementById('previewInitials');
+            if(user.profilePicture) { img.src=user.profilePicture; img.classList.remove('hidden'); init.classList.add('hidden'); }
+            else { init.textContent = user.name.charAt(0); img.classList.add('hidden'); init.classList.remove('hidden'); }
+            document.getElementById('editProfileModal').classList.remove('hidden');
+        };
+        window.closeEditModal = function() { document.getElementById('editProfileModal').classList.add('hidden'); };
+        window.previewFile = function() {
+            const file = document.getElementById('profilePicInput').files[0];
+            if(file) {
+                const r = new FileReader();
+                r.onload = (e) => {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('previewImage').classList.remove('hidden');
+                    document.getElementById('previewInitials').classList.add('hidden');
+                };
+                r.readAsDataURL(file);
+            }
+        };
+        document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('name', document.getElementById('editName').value);
+            formData.append('bio', document.getElementById('editBio').value);
+            const file = document.getElementById('profilePicInput').files[0];
+            if(file) formData.append('profilePicture', file);
+            const res = await fetch('http://localhost:5000/user/update', { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('flySocialToken')}` }, body: formData });
+            if (res.ok) window.location.reload();
+            else alert('Error updating');
+        });
+    </script>
+</body>
+</html>

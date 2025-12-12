@@ -9,6 +9,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@tailwindcss/cli": "^4.1.16",
     "baseline-browser-mapping": "^2.8.23",
     "browserslist": "^4.27.0",
@@ -27,6 +28,7 @@
     "passport-google-oauth20": "^2.0.0",
     "picocolors": "^1.1.1",
     "postcss-value-parser": "^4.2.0",
+    "socket.io": "^4.8.1",
     "source-map-js": "^1.2.1",
     "update-browserslist-db": "^1.1.4"
   },

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLY Social - Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar Hide */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none;  scrollbar-width: none; }
+        
+        /* Chat Message Styles */
+        .msg-own { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border-radius: 18px 18px 0 18px; 
+            align-self: flex-end; 
+            box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
+        }
+        .msg-other { 
+            background-color: #ffffff; 
+            color: #1f2937; 
+            border-radius: 18px 18px 18px 0; 
+            align-self: flex-start; 
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-white border-b border-gray-200 flex-shrink-0 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='Home.html'">
+                <img src="images/fly-logo.png" class="h-8 w-8">
+                <h1 class="font-bold text-xl text-gray-800 tracking-tight">Messages</h1>
+            </div>
+            <button onclick="window.location.href='Home.html'" class="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-purple-600 transition-colors bg-gray-100 px-4 py-2 rounded-full">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Home
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 max-w-6xl mx-auto w-full flex overflow-hidden sm:p-4 gap-4">
+        
+        <div id="contactsPanel" class="w-full sm:w-1/3 bg-white sm:rounded-2xl shadow-lg flex flex-col overflow-hidden h-full border border-gray-100">
+            <div class="p-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="font-bold text-gray-700">Your Friends</h2>
+            </div>
+            
+            <!-- Ai Chat -->
+            <div onclick="openAIChat()" class="mx-2 mt-2 mb-1 flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-white hover:bg-purple-100 rounded-xl cursor-pointer border border-purple-100 shadow-sm transition-all group">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 flex flex-shrink-0 items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
+                    ✨
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-gray-900">Fly AI Assistant</p>
+                    <p class="text-xs text-purple-600 font-medium">Always here to help</p>
+                </div>
+            </div>
+            <div id="contactsList" class="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-hide">
+                <p class="text-center text-gray-400 text-sm mt-10 flex flex-col items-center gap-2">
+                    <span class="text-2xl">🔄</span> Loading contacts...
+                </p>
+            </div>
+        </div>
+
+        <div id="chatPanel" class="hidden sm:flex flex-1 bg-white sm:rounded-2xl shadow-lg flex-col overflow-hidden relative h-full absolute inset-0 sm:static z-20 border border-gray-100">
+            
+            <div class="p-3 border-b border-gray-100 flex items-center gap-3 bg-white shadow-sm z-10">
+                <button class="sm:hidden p-2 -ml-2 text-gray-500" onclick="closeChat()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                
+                <div id="chatAvatar" class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden border border-purple-200">?</div>
+                
+                <div>
+                    <h3 id="chatName" class="font-bold text-gray-900 leading-none">Select a chat</h3>
+                    <p id="chatUsername" class="text-xs text-gray-500">@username</p>
+                </div>
+            </div>
+
+            <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2 bg-gray-50">
+                <div class="h-full flex flex-col items-center justify-center text-gray-300 select-none">
+                    <svg class="w-20 h-20 mb-4 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    <p class="font-medium text-gray-400">Select a friend to start chatting</p>
+                </div>
+            </div>
+
+            <form id="messageForm" class="p-3 border-t border-gray-100 bg-white hidden">
+                <div class="flex gap-2 items-center">
+                    <input type="file" id="chatFileInput" accept="image/*" class="hidden" onchange="handleChatFile(this)">
+                    
+                    <button type="button" onclick="document.getElementById('chatFileInput').click()" class="p-2 text-gray-400 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                    </button>
+
+                    <input type="text" id="messageInput" placeholder="Type a message..." 
+                           class="flex-1 bg-gray-100 border-0 rounded-full px-5 py-3 focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all outline-none" autocomplete="off">
+                    
+                    <button type="submit" class="bg-purple-600 text-white p-3 rounded-full hover:bg-purple-700 transition-colors shadow-md flex-shrink-0">
+                        <svg class="w-5 h-5 translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        // 1. Connect to Backend
+        const socket = io("http://localhost:5000");
+        const token = localStorage.getItem('flySocialToken');
+        
+        // Auth Check
+        if (!token) window.location.href = 'Login.html';
+
+        // Decode Token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const myId = payload.id;
+        let currentReceiverId = null;
+
+        // Join my room (so people can message me)
+        socket.emit("join_room", myId);
+
+        // 2. Load Friends List (Followings)
+        async function loadContacts() {
+            try {
+                const res = await fetch(`http://localhost:5000/users/${myId}/connections?type=following`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await res.json();
+                
+                const list = document.getElementById('contactsList');
+                list.innerHTML = '';
+
+                if (users.length === 0) {
+                    list.innerHTML = `
+                        <div class="text-center text-gray-400 mt-10 text-sm flex flex-col items-center">
+                            <span class="text-2xl mb-2">😢</span>
+                            <p>You are not following anyone.</p>
+                            <a href="Home.html" class="text-purple-600 font-bold hover:underline mt-2">Find people to follow</a>
+                        </div>`;
+                    return;
+                }
+
+                users.forEach(u => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-3 p-3 hover:bg-purple-50 rounded-xl cursor-pointer transition-all border-b border-gray-50 last:border-none";
+                    div.onclick = () => openChat(u);
+                    
+                    const initial = u.name.charAt(0).toUpperCase();
+                    
+                    div.innerHTML = `
+                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-lg overflow-hidden border-2 border-white shadow-sm">
+                            ${u.profilePicture ? `<img src="${u.profilePicture}" class="w-full h-full object-cover">` : initial}
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-bold text-gray-900 truncate">${u.name}</p>
+                            <p class="text-xs text-gray-500 truncate">@${u.username}</p>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        // 3. Open Chat
+        async function openChat(user) {
+            currentReceiverId = user._id;
+            
+            // Update Header
+            document.getElementById('chatName').textContent = user.name;
+            document.getElementById('chatUsername').textContent = `@${user.username}`;
+            
+            const avatar = document.getElementById('chatAvatar');
+            if(user.profilePicture) {
+                avatar.innerHTML = `<img src="${user.profilePicture}" class="w-full h-full object-cover">`;
+            } else {
+                avatar.textContent = user.name.charAt(0).toUpperCase();
+            }
+
+            // Show Input Form
+            document.getElementById('messageForm').classList.remove('hidden');
+            
+            // Mobile Logic: Hide List, Show Chat
+            if(window.innerWidth < 640) {
+                document.getElementById('contactsPanel').classList.add('hidden');
+                document.getElementById('chatPanel').classList.remove('hidden');
+            }
+
+            loadMessages(user._id);
+        }
+
+        // 4. Load Message History
+        async function loadMessages(otherId) {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '<div class="flex justify-center pt-10"><div class="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div></div>';
+
+            try {
+                const res = await fetch(`http://localhost:5000/messages/${otherId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const messages = await res.json();
+                
+                container.innerHTML = '';
+
+                if (messages.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-400 text-sm mt-10 flex flex-col items-center"><span class="text-4xl mb-2">👋</span>Say hi!</div>';
+                } else {
+                    messages.forEach(msg => appendMessage(msg));
+                }
+                scrollToBottom();
+            } catch (err) { console.error(err); }
+        }
+
+        // 5. Send Message
+       // REPLACE YOUR EXISTING submit LISTENER WITH THIS:
+
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            // Stop if empty
+            if (!text) return;
+
+            // --- CHECK: ARE WE TALKING TO AI OR HUMAN? ---
+
+            if (currentReceiverId === 'AI_BOT') {
+                // --- OPTION A: AI CHAT (Do NOT send to Socket/Database) ---
+                
+                // 1. Show MY message immediately on screen
+                appendMessage({ senderId: myId, text: text });
+                input.value = '';
+                scrollToBottom();
+
+                // 2. Show "Thinking..."
+                const loadingId = showTypingIndicator();
+
+                // 3. Ask AI (Call your function)
+                // If you are using the server API approach:
+                const aiReply = await fetchAIResponse(text); 
+                
+                // 4. Remove loader & Show AI Message
+                removeTypingIndicator(loadingId);
+                appendMessage({ senderId: 'AI_BOT', text: aiReply });
+                scrollToBottom();
+
+            } else {
+                // --- OPTION B: HUMAN CHAT (Send to Socket/Database) ---
+                
+                if (!currentReceiverId) return;
+
+                const messageData = {
+                    senderId: myId,
+                    receiverId: currentReceiverId, // MongoDB needs a real User ID here
+                    text: text,
+                    createdAt: new Date()
+                };
+
+                // Send to server to be saved in MongoDB
+                socket.emit("send_message", messageData);
+                
+                // Show on my screen
+                appendMessage(messageData);
+                input.value = '';
+                scrollToBottom();
+            }
+        });
+
+        // 6. Receive Message
+        socket.on("receive_message", (data) => {
+            if (data.senderId === currentReceiverId) {
+                appendMessage(data);
+                scrollToBottom();
+            } else {
+                // Notification Logic could go here
+                // alert("New message from " + data.senderId);
+            }
+        });
+
+        // --- NEW: Handle Image Upload ---
+        async function handleChatFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // 1. Upload to Server
+            const formData = new FormData();
+            formData.append('chatFile', file);
+
+            try {
+                // Upload the file first
+                const res = await fetch('http://localhost:5000/chat/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // 2. Send Socket Message with the Image URL we got back
+                    const messageData = {
+                        senderId: myId,
+                        receiverId: currentReceiverId,
+                        text: "", // No text for image-only messages
+                        imageUrl: data.imageUrl, // The image URL from server
+                        createdAt: new Date()
+                    };
+
+                    socket.emit("send_message", messageData);
+                    appendMessage(messageData); // Show it immediately
+                    scrollToBottom();
+                }
+            } catch (err) {
+                alert("Failed to upload image");
+                console.error(err);
+            }
+            // Clear input so you can upload same file again if needed
+            input.value = '';
+        }
+
+        // --- UPDATED: Append Message (To show images) ---
+        function appendMessage(msg) {
+            const container = document.getElementById('messagesContainer');
+            
+            // Clear "Say hi" message if it's there
+            if (container.innerHTML.includes('Say hi')) container.innerHTML = '';
+
+            const isMe = msg.senderId === myId || msg.sender === myId;
+            
+            const div = document.createElement('div');
+            div.className = `px-4 py-2 text-sm shadow-sm mb-2 max-w-[75%] ${isMe ? 'msg-own' : 'msg-other'}`;
+            
+            // Logic: Show Image if exists, Show Text if exists
+            let contentHtml = '';
+            
+            if (msg.imageUrl) {
+                contentHtml += `<img src="${msg.imageUrl}" class="rounded-lg mb-2 max-w-full h-auto border border-black/10" style="max-height: 200px;">`;
+            }
+            if (msg.text) {
+                contentHtml += `<p>${msg.text}</p>`;
+            }
+
+            div.innerHTML = contentHtml;
+            container.appendChild(div);
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.closeChat = function() {
+            document.getElementById('contactsPanel').classList.remove('hidden');
+            document.getElementById('chatPanel').classList.add('hidden');
+        }
+
+        // --- 8. AUTO-OPEN CHAT FROM URL ---
+        async function checkUrlForChat() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatWithId = urlParams.get('chatWith');
+
+            if (chatWithId) {
+                try {
+                    // Fetch that user's details
+                    const res = await fetch(`http://localhost:5000/users/${chatWithId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const user = await res.json();
+                    
+                    // Open the chat immediately
+                    openChat(user);
+                    
+                    // Clean the URL (remove ?chatWith=...)
+                    window.history.replaceState({}, document.title, "chat.html");
+                } catch (err) { console.error("Error opening chat:", err); }
+            }
+        }
+
+        // --- 9. AI CHAT LOGIC ---
+        function openAIChat() {
+            // 1. Setup Visuals
+            currentReceiverId = 'AI_BOT'; // Special ID for AI
+            document.getElementById('chatName').textContent = "Fly AI Assistant";
+            document.getElementById('chatUsername').textContent = "@fly_ai";
+            document.getElementById('chatAvatar').innerHTML = 
+                `<div class="w-full h-full bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center text-white">✨</div>`;
+            
+            // 2. Clear previous messages & Show AI Welcome
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            
+            // Add Welcome Message
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.className = "px-4 py-2 text-sm shadow-sm mb-2 max-w-[75%] msg-other bg-white border border-gray-200";
+            // Inside openAIChat() function
+            welcomeDiv.innerHTML = `
+                <div class="flex items-center gap-2 mb-1"><span class="text-lg">✨</span> <b>Fly AI</b></div>
+                <p>Hello! I am your AI assistant. I am connected and ready to help! ask me anything. 😎</p>
+            `;
+            container.appendChild(welcomeDiv);
+
+            // 3. Show Input & Mobile handling
+            document.getElementById('messageForm').classList.remove('hidden');
+            if(window.innerWidth < 640) {
+                document.getElementById('contactsPanel').classList.add('hidden');
+                document.getElementById('chatPanel').classList.remove('hidden');
+            }
+        }
+
+        // Function to call YOUR Backend Server
+       async function fetchAIResponse(userText) {
+            try {
+                const response = await fetch('http://localhost:5000/chat/ai', { 
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ prompt: userText })
+                });
+
+                const data = await response.json();
+                
+                // --- DEBUGGING LINE ---
+                console.log("AI SERVER RESPONSE:", data); // <--- Open Console (F12) to see this!
+
+                // Safety check: if data.reply is missing, return a fallback
+                if (!data.reply) {
+                    return "⚠️ Error: Server sent empty data. Check console.";
+                }
+                
+                return data.reply; 
+
+            } catch (error) {
+                console.error("Server AI Error:", error);
+                return "⚠️ Server error: Could not reach the AI.";
+            }
+        }
+        
+        // --- 10. TYPING INDICATOR HELPERS ---
+        function showTypingIndicator() {
+            const id = 'loading-' + Date.now();
+            const container = document.getElementById('messagesContainer');
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = "px-4 py-2 text-sm shadow-sm mb-2 max-w-[75%] msg-other bg-white border border-gray-200 flex gap-1 items-center";
+            div.innerHTML = `
+                <span class="text-lg">✨</span> 
+                <span class="animate-pulse text-gray-500">Thinking...</span>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        // Init
+        loadContacts();
+        checkUrlForChat(); // <--- Add this line
+    </script>
+</body>
+</html>
