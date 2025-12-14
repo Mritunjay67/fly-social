@@ -1,40 +1,38 @@
-// /models/Post.js
-
 import mongoose from "mongoose";
-const { Schema } = mongoose;
 
-const postSchema = new Schema({
-    // This is the 'user_id' from your diagram.
-    // It links this post to the user who created it.
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User', // This 'User' must match the name you used in mongoose.model('User', ...)
-        required: true
-    },
-    // This is the 'image_url' from your diagram
-    imageUrl: {
-        type: String,
-        required: true
-    },
-    // This is the 'caption' from your diagram
-    caption: {
-        type: String,
-        required: false // Maybe they don't need a caption
-    },
-    // This is the 'created_at' from your diagram
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    // We can add likes later, starting with an empty array
-    likes: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
-    ]
+const postSchema = new mongoose.Schema({
+    // Reference to the user who created the post
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  // We will store both images and videos here
+  imageUrl: { 
+    type: String,
+    required: true,
+  },
+  // Optional caption for the post
+  caption: {
+    type: String,
+  },
+  // --- NEW FIELD: To distinguish Reels ---
+  type: {
+    type: String,
+    enum: ['image', 'video'],
+    default: 'image'
+  },
+  // Array of user references who liked the post
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }],
+    // Timestamp of when the post was created   
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-// We 'export' this model so server.js can use it
-const Post = mongoose.model('Post', postSchema);
+const Post = mongoose.model("Post", postSchema);
 export default Post;

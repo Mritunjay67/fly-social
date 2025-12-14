@@ -89,7 +89,20 @@ const storage = multer.diskStorage({
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
-const upload = multer({ storage: storage });
+// File filter to accept only images and videos
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Invalid file type! Only images and videos allowed.'), false);
+    }
+};
+// Set file size limit to 50MB
+const upload = multer({ 
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 50 * 1024 * 1024 } // Limit to 50MB
+});
 
 // --- MIDDLEWARE ---
 const verifyToken = (req, res, next) => {
@@ -185,11 +198,25 @@ passport.deserializeUser(async (id, done) => {
 app.post("/createpost", verifyToken, upload.single('imageFile'), async (req, res) => {
     try {
         const { caption } = req.body;
-        if (!req.file) return res.status(400).json({ message: "Image required" });
-        const newPost = new Post({ user: req.userId, imageUrl: `/uploads/${req.file.filename}`, caption });
+        if (!req.file) return res.status(400).json({ message: "File required" });
+
+        // Detect if it is a video or image
+        const isVideo = req.file.mimetype.startsWith('video/');
+        const postType = isVideo ? 'video' : 'image';
+
+        const newPost = new Post({ 
+            user: req.userId, 
+            imageUrl: `/uploads/${req.file.filename}`, // We keep the name 'imageUrl' to save time, but it stores video paths too
+            caption,
+            type: postType // Save the type
+        });
+
         await newPost.save();
         res.status(201).json({ message: "Post created", post: newPost });
-    } catch (err) { res.status(500).json({ message: "Server error" }); }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ message: "Server error" }); 
+    }
 });
 
 app.get("/getposts", verifyToken, async (req, res) => {
@@ -385,7 +412,12 @@ app.get("/messages/:otherUserId", verifyToken, async (req, res) => {
                 { sender: myId, receiver: otherId },
                 { sender: otherId, receiver: myId }
             ]
-        }).sort({ createdAt: 1 });
+        }).sort({ createdAt: 1 })
+        .populate({
+            path: "postId", 
+            select: "imageUrl caption user", // Fetch post image & caption
+            populate: { path: "user", select: "username profilePicture" } // Fetch post author
+        });
         res.json(messages);
     } catch (err) { res.status(500).json({ message: "Server error" }); }
 });
@@ -440,19 +472,31 @@ io.on("connection", (socket) => {
 
   // Updated to handle Image URLs
   socket.on("send_message", async (data) => {
-    const { senderId, receiverId, text, imageUrl } = data; // Now getting imageUrl too
+    const { senderId, receiverId, text, imageUrl, postId } = data; // Now getting imageUrl too
 
     try {
+        // Determine message type
+        let messageType = "text";
+        if (postId) messageType = "post_share";
+        else if (imageUrl) messageType = "image";
+        // Create and save message
         const newMessage = new Message({ 
             sender: senderId, 
             receiver: receiverId, 
-            text: text || "", // Handle empty text
-            imageUrl: imageUrl // Save the image URL
+            text: text || "", 
+            imageUrl: imageUrl, // Save the image URL
+            postId: postId || null, // Save the post ID
+            messageType: messageType // Save the type
         });
         await newMessage.save();
 
+        // 4. Populate the post details immediately so the receiver sees the card
+        await newMessage.populate({
+            path: "postId",
+            select: "imageUrl caption user"
+        });
         // Send to receiver
-        io.to(receiverId).emit("receive_message", data);
+        io.to(receiverId).emit("receive_message", newMessage);
         
     } catch (err) { console.error("Error saving message:", err); }
   });
