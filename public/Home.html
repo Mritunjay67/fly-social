@@ -30,9 +30,19 @@
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <img src="images/fly-logo.png" alt="FLY Social Logo" class="h-10 w-10">
-                <div class="relative">
-                    <input type="text" placeholder="Search users..." class="w-64 pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <div class="relative group">
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        oninput="searchUsers(this.value)" 
+                        placeholder="Search users..." 
+                        class="w-64 pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                        autocomplete="off"
+                    >
                     <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    
+                    <div id="searchResults" class="hidden absolute top-12 left-0 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden max-h-96 overflow-y-auto">
+                        </div>
                 </div>
             </div>
             
@@ -464,10 +474,15 @@
             }
         }
 
-        // --- 5. LOAD POSTS (WITH VAULT FIX) ---
+        // --- 5. LOAD POSTS (WITH FIX FOR VIDEO/IMAGE DISPLAY) ---
         async function loadPosts() {
+            const postFeedContainer = document.getElementById('postFeedContainer');
+            
+            // Loading Spinner
             postFeedContainer.innerHTML = '<div class="flex justify-center p-10"><div class="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div></div>';
+            
             try {
+                const token = localStorage.getItem('flySocialToken');
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const currentUserId = payload.id;
                 const filterBox = document.getElementById('feedFilter');
@@ -477,7 +492,7 @@
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
+                
                 const posts = await response.json();
                 postFeedContainer.innerHTML = ''; 
 
@@ -487,92 +502,91 @@
                 }
 
                 posts.forEach(post => {
-                    // 🔥 SAVE TO VAULT: This is the fix. We save the data safely in memory.
+                    // Save post to vault for sharing
                     window.postsVault[post._id] = post;
                     
                     const postElement = document.createElement('article');
-                    postElement.className = 'bg-white rounded-xl post-shadow overflow-hidden mb-6';
+                    postElement.className = 'bg-white rounded-xl post-shadow overflow-hidden mb-6 border border-gray-100';
+                    
                     const authorName = post.user ? post.user.name : 'Unknown';
                     const authorUsername = post.user ? post.user.username : 'unknown';
                     const authorInitial = authorName.charAt(0).toUpperCase() || '?';
                     const isLiked = post.likes.includes(currentUserId);
                     const isMyPost = post.user._id === currentUserId;
 
+                    // --- MEDIA CONTENT LOGIC ---
+                    let mediaContent = '';
+                    
+                    if (post.type === 'video') {
+                        // REEL STYLE: Black background, fixed height for video player feel
+                        mediaContent = `
+                            <div class="bg-black w-full flex items-center justify-center relative group" style="height: 550px;">
+                                <video src="${post.imageUrl}" class="w-full h-full object-contain" controls loop playsinline></video>
+                                <div class="absolute top-3 right-3 bg-white/20 text-white text-xs px-2 py-1 rounded backdrop-blur-md border border-white/30">Reel</div>
+                            </div>`;
+                    } else {
+                        // PHOTO STYLE: Normal background, auto height (no fixed 500px height!)
+                        mediaContent = `
+                            <div class="w-full bg-gray-50 border-t border-b border-gray-100">
+                                <img src="${post.imageUrl}" alt="Post image" class="w-full h-auto object-cover" style="max-height: 600px;">
+                            </div>`;
+                    }
+
                     postElement.innerHTML = `
+                        <div class="p-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='profile.html?id=${post.user._id}'">
+                                <div class="w-10 h-10 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden text-white font-bold shadow-sm">
+                                    ${post.user.profilePicture ? `<img src="${post.user.profilePicture}" class="w-full h-full object-cover">` : authorInitial}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 text-sm hover:underline">${authorName}</h4>
+                                    <p class="text-xs text-gray-500">@${authorUsername}</p>
+                                </div>
+                            </div>
+                            <button onclick="openPostOptions('${post._id}', ${isMyPost})" class="text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+                            </button>
+                        </div>
+                        
+                        ${mediaContent}
+
                         <div class="p-4">
                             <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center overflow-hidden text-white font-bold">
-                                        ${post.user.profilePicture 
-                                        ? `<img src="${post.user.profilePicture}" class="w-full h-full object-cover">` 
-                                        : authorInitial}
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800 text-sm hover:underline cursor-pointer">
-                                            <a href="profile.html?id=${post.user._id}">${authorName}</a>
-                                        </h4>
-                                        <p class="text-xs text-gray-500">@${authorUsername}</p>
-                                    </div>
+                                <div class="flex items-center space-x-4">
+                                    <button onclick="toggleLike('${post._id}')" class="group focus:outline-none transform active:scale-125 transition-transform duration-150">
+                                        <svg id="heart-icon-${post._id}" class="w-7 h-7 ${isLiked ? 'text-red-500 fill-current' : 'text-gray-800'} group-hover:text-red-500 transition-colors" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                    </button>
+                                    <button onclick="openCommentPanel('${post._id}')" class="text-gray-800 hover:text-purple-600 transition-colors transform hover:scale-110">
+                                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                    </button>
+                                    <button onclick="openShareModal('${post._id}')" class="text-gray-800 hover:text-green-600 transition-colors transform hover:scale-110 -mt-1">
+                                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                    </button>
                                 </div>
-                                <button onclick="openPostOptions('${post._id}', ${isMyPost})" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
-                                </button>
                             </div>
-                        </div>
-                       <div class="bg-black aspect-w-1 aspect-h-1 flex items-center justify-center" style="min-height: 400px; max-height: 500px;">
-                            ${post.type === 'video' 
-                                ? `
-                                <video src="${post.imageUrl}" 
-                                    class="w-full h-full object-cover" 
-                                    controls 
-                                    loop 
-                                    playsinline
-                                    style="max-height: 500px;">
-                                </video>
-                                `
-                                : `
-                                <img src="${post.imageUrl}" alt="Post image" class="w-full h-full object-contain bg-gray-50">
-                                `
-                            }
-                        </div>
-                        <div class="p-4">
-                            <div class="flex items-center space-x-4 mb-3">
-                                <button onclick="toggleLike('${post._id}')" class="flex items-center space-x-1 group">
-                                    <svg id="heart-icon-${post._id}" class="w-7 h-7 ${isLiked ? 'text-red-500 fill-current' : 'text-gray-600'} group-hover:text-red-500 transition-colors" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                                </button>
-                                <button onclick="openCommentPanel('${post._id}')" class="text-gray-600 hover:text-purple-500">
-                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                </button>
-                                
-                                <button onclick="openShareModal('${post._id}')" class="text-gray-600 hover:text-green-500">
-                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
-                                </button>
-                            </div>
-                            <div class="font-bold text-sm mb-2"><span id="likes-count-${post._id}">${post.likes.length}</span> likes</div>
-                            ${post.caption ? (() => {
+                            
+                            <div class="font-bold text-sm mb-2 text-gray-900"><span id="likes-count-${post._id}">${post.likes.length}</span> likes</div>
+                            
+                           ${post.caption ? (() => {
                                 const isLong = post.caption.length > 100;
                                 return `
                                     <div class="text-sm text-gray-800 mb-2">
-                                        <span class="font-bold mr-1">${authorUsername}</span>
+                                        <span class="font-bold mr-1 text-gray-900 cursor-pointer hover:underline" onclick="window.location.href='profile.html?id=${post.user._id}'">${authorUsername}</span>
                                         <span id="caption-text-${post._id}" class="${isLong ? 'line-clamp-2' : ''} break-words">
                                             ${post.caption}
                                         </span>
-                                        ${isLong ? `
-                                            <button id="caption-more-${post._id}" onclick="toggleCaption('${post._id}')" class="text-gray-500 text-xs font-semibold ml-1 cursor-pointer hover:text-gray-700">
-                                                more
-                                            </button>
-                                        ` : ''}
+                                        ${isLong ? `<button id="caption-more-${post._id}" onclick="toggleCaption('${post._id}')" class="text-gray-500 text-xs font-semibold ml-1 cursor-pointer hover:text-gray-700">more</button>` : ''}
                                     </div>
                                 `;
                             })() : ''}
-                            <div class="text-gray-400 text-xs mt-2 uppercase tracking-wide">${new Date(post.createdAt).toLocaleDateString()}</div>
+                            
+                            <div class="text-gray-400 text-[10px] uppercase tracking-wide font-medium mt-1">${new Date(post.createdAt).toLocaleDateString()}</div>
                         </div>
                     `;
                     postFeedContainer.appendChild(postElement);
                 });
             } catch (error) { console.error('Load Posts Error:', error); }
         }
-
         // --- 6. SHARE POST LOGIC (UPDATED WITH VAULT) ---
         window.currentPostToShare = null;
 
@@ -835,6 +849,84 @@
             } catch (err) { console.error("Comment Error:", err); alert("Error posting comment."); } 
             finally { input.disabled = false; input.focus(); }
         };
+
+        // --- SEARCH FUNCTIONALITY ---
+        let searchTimeout;
+
+        window.searchUsers = async function(query) {
+            const resultsContainer = document.getElementById('searchResults');
+            
+            // 1. Clear timeout if user keeps typing (Debounce)
+            clearTimeout(searchTimeout);
+
+            // 2. If empty, hide dropdown
+            if (!query.trim()) {
+                resultsContainer.classList.add('hidden');
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            // 3. Wait 300ms before sending request (saves server resources)
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const token = localStorage.getItem('flySocialToken');
+                    const response = await fetch(`http://localhost:5000/search?query=${query}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const users = await response.json();
+
+                    // 4. Render Results
+                    resultsContainer.innerHTML = '';
+                    
+                    if (users.length === 0) {
+                        resultsContainer.innerHTML = `
+                            <div class="p-4 text-center text-gray-500 text-sm">No users found</div>
+                        `;
+                    } else {
+                        users.forEach(user => {
+                            const div = document.createElement('div');
+                            div.className = "flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors";
+                            
+                            // Navigate to profile on click
+                            div.onclick = () => {
+                                window.location.href = `profile.html?id=${user._id}`;
+                            };
+
+                            const avatarHtml = user.profilePicture 
+                                ? `<img src="${user.profilePicture}" class="w-full h-full object-cover">` 
+                                : `<span class="text-white font-bold">${user.name.charAt(0).toUpperCase()}</span>`;
+
+                            div.innerHTML = `
+                                <div class="w-10 h-10 rounded-full bg-purple-500 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                    ${avatarHtml}
+                                </div>
+                                <div class="overflow-hidden">
+                                    <p class="font-bold text-sm text-gray-800 truncate">${user.username}</p>
+                                    <p class="text-xs text-gray-500 truncate">${user.name}</p>
+                                </div>
+                            `;
+                            resultsContainer.appendChild(div);
+                        });
+                    }
+                    
+                    // Show the dropdown
+                    resultsContainer.classList.remove('hidden');
+
+                } catch (err) {
+                    console.error("Search error:", err);
+                }
+            }, 300);
+        };
+
+        // 5. Close search dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        }); 
 
         // Initialize App
         fetchProfile();

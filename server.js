@@ -359,6 +359,7 @@ app.get("/search", verifyToken, async (req, res) => {
     try {
         const { query } = req.query;
         if (!query) return res.json([]);
+        // Search by username OR name (Case insensitive)
         const users = await User.find({
             $or: [{ username: { $regex: query, $options: "i" } }, { name: { $regex: query, $options: "i" } }]
         }).select("name username profilePicture").limit(10);
