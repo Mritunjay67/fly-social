@@ -38,7 +38,7 @@ import Message from "./models/Message.js"; // <--- NEW IMPORT
 import Notification from "./models/notification.js";
 
 // For __dirname in ES modules
-import path from 'path';
+
 import { fileURLToPath } from 'url';
 
 // 👇 Add these two lines to create __dirname manually
