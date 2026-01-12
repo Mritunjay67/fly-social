@@ -36,6 +36,7 @@ import Post from "./models/Post.js";
 import Comment from "./models/Comment.js";
 import Message from "./models/Message.js"; // <--- NEW IMPORT
 import Notification from "./models/notification.js";
+import fs from 'fs';
 
 // For __dirname in ES modules
 
@@ -74,6 +75,10 @@ app.use(cors());
 // --- REPLACE BODY PARSER WITH THIS ---
 app.use(express.json()); // Handles JSON data (like bodyParser.json)
 app.use(express.urlencoded({ extended: true })); // Handles form data (important for uploads)
+
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
 
 app.use(express.static("public"));
 app.use('/uploads', express.static('uploads'));
