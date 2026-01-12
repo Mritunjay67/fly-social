@@ -10,6 +10,8 @@ git commit -m "Added post share feature"
 # Step 4: Push the changes to your remote repository (GitHub/GitLab)
 git push origin main */
 
+// password of mongo atlas is Mritunjay678
+
 import 'dotenv/config';
 import express from "express";
 import mongoose from "mongoose";
@@ -34,6 +36,14 @@ import Post from "./models/Post.js";
 import Comment from "./models/Comment.js";
 import Message from "./models/Message.js"; // <--- NEW IMPORT
 import Notification from "./models/notification.js";
+
+// For __dirname in ES modules
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// 👇 Add these two lines to create __dirname manually
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Secrets
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -569,6 +579,10 @@ app.post('/notifications/mark-read', verifyToken, async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: "Error updating notifications" });
     }
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'Home.html'));
 });
 
 const PORT = process.env.PORT || 5000;
