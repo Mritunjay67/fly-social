@@ -389,7 +389,7 @@
             formData.append('imageFile', file);
 
             try {
-                const response = await fetch('http://localhost:5000/createpost', {
+                const response = await fetch('/createpost', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -438,7 +438,7 @@
             if (file) formData.append('imageFile', file);
 
             try {
-                const response = await fetch('http://localhost:5000/ai/generate-caption', {
+                const response = await fetch('/ai/generate-caption', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -464,7 +464,7 @@
         // --- 4. FETCH PROFILE ---
         async function fetchProfile() {
             try {
-                const response = await fetch('http://localhost:5000/profile', {
+                const response = await fetch('/profile', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -503,7 +503,7 @@
                 const filterBox = document.getElementById('feedFilter');
                 const filter = (filterBox && filterBox.checked) ? 'following' : 'all';
 
-                const response = await fetch(`http://localhost:5000/getposts?filter=${filter}`, {
+                const response = await fetch(`/getposts?filter=${filter}`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -634,7 +634,7 @@
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const myId = payload.id;
-                const res = await fetch(`http://localhost:5000/users/${myId}/connections?type=following`, {
+                const res = await fetch(`/users/${myId}/connections?type=following`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const users = await res.json();
@@ -678,7 +678,7 @@
             };
             
             // Send via Socket
-            const socketInstance = io("http://localhost:5000");
+            const socketInstance = io("");
             socketInstance.emit("send_message", messageData);
 
             // UI Feedback
@@ -694,7 +694,7 @@
         // --- GLOBAL HELPERS (Like, Delete, More/Less) ---
         window.toggleLike = async function(postId) {
             try {
-                const response = await fetch(`http://localhost:5000/posts/${postId}/like`, {
+                const response = await fetch(`/posts/${postId}/like`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -757,7 +757,7 @@
             if (window.pendingDelete) {
                 const { id1, id2, type } = window.pendingDelete;
                 try {
-                    const url = type === 'post' ? `http://localhost:5000/posts/${id1}` : `http://localhost:5000/posts/${id1}/comments/${id2}`;
+                    const url = type === 'post' ? `/posts/${id1}` : `/posts/${id1}/comments/${id2}`;
                     const response = await fetch(url, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -792,7 +792,7 @@
             
             try {
                 // Fetch Comments
-                const response = await fetch(`http://localhost:5000/posts/${postId}/comments`, { 
+                const response = await fetch(`/posts/${postId}/comments`, { 
                     headers: { 'Authorization': `Bearer ${token}` } 
                 });
                 const comments = await response.json();
@@ -854,7 +854,7 @@
             input.disabled = true;
             try {
                 const localToken = localStorage.getItem('flySocialToken');
-                const response = await fetch(`http://localhost:5000/posts/${window.currentPanelPostId}/comments`, {
+                const response = await fetch(`/posts/${window.currentPanelPostId}/comments`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localToken}` },
                     body: JSON.stringify({ text: text })
@@ -885,7 +885,7 @@
             searchTimeout = setTimeout(async () => {
                 try {
                     const token = localStorage.getItem('flySocialToken');
-                    const response = await fetch(`http://localhost:5000/search?query=${query}`, {
+                    const response = await fetch(`/search?query=${query}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const users = await response.json();

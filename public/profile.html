@@ -202,7 +202,7 @@
             if (!query.trim()) { resultsBox.classList.add('hidden'); return; }
             searchTimeout = setTimeout(async () => {
                 try {
-                    const res = await fetch(`http://localhost:5000/search?query=${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    const res = await fetch(`/search?query=${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
                     const users = await res.json();
                     resultsBox.innerHTML = ''; resultsBox.classList.remove('hidden');
                     if (users.length === 0) resultsBox.innerHTML = '<div class="p-3 text-sm text-gray-500 text-center">No users found</div>';
@@ -233,7 +233,7 @@
 
             // 1. Load User Info
             try {
-                const res = await fetch(`http://localhost:5000/users/${profileId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`/users/${profileId}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const user = await res.json();
                 document.getElementById('profileUsername').textContent = `@${user.username}`;
                 document.getElementById('profileName').textContent = user.name;
@@ -280,7 +280,7 @@
 
             // 2. Load Posts
             try {
-                const res = await fetch(`http://localhost:5000/posts/user/${profileId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`/posts/user/${profileId}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 profilePosts = await res.json();
                 document.getElementById('postsCount').textContent = profilePosts.length;
                 if (profilePosts.length === 0) document.getElementById('noPostsMsg').classList.remove('hidden');
@@ -338,7 +338,7 @@
 
             window.toggleFollow = async function() {
                 const action = isFollowing ? 'unfollow' : 'follow';
-                const res = await fetch(`http://localhost:5000/users/${profileId}/${action}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`/users/${profileId}/${action}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
                 if (res.ok) {
                     isFollowing = !isFollowing;
                     updateFollowButton();
@@ -441,7 +441,7 @@
                 document.getElementById('postModal').classList.remove('hidden');
 
                 // API Call for Comments
-                const res = await fetch(`http://localhost:5000/posts/${post._id}/comments`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`/posts/${post._id}/comments`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const comments = await res.json();
                 
                 const loader = document.getElementById('loadingComments');
@@ -481,7 +481,7 @@
                 const isMyProfile = profileId === tokenPayload.id;
 
                 // 3. Fetch Data
-                const response = await fetch(`http://localhost:5000/users/${profileId}/connections?type=${type}`, {
+                const response = await fetch(`/users/${profileId}/connections?type=${type}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const users = await response.json();
@@ -534,7 +534,7 @@
              if(confirm("Unfollow this user?")) {
                  const token = localStorage.getItem('flySocialToken');
                  try {
-                     await fetch(`http://localhost:5000/users/${targetId}/unfollow`, {
+                     await fetch(`/users/${targetId}/unfollow`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }
                      });
@@ -575,7 +575,7 @@
             formData.append('bio', document.getElementById('editBio').value);
             const file = document.getElementById('profilePicInput').files[0];
             if(file) formData.append('profilePicture', file);
-            const res = await fetch('http://localhost:5000/user/update', { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('flySocialToken')}` }, body: formData });
+            const res = await fetch('/user/update', { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('flySocialToken')}` }, body: formData });
             if (res.ok) window.location.reload();
             else alert('Error updating');
         });

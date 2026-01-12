@@ -114,7 +114,7 @@
 
     <script>
         // 1. Connect to Backend
-        const socket = io("http://localhost:5000");
+        const socket = io("");
         const token = localStorage.getItem('flySocialToken');
         
         // Auth Check
@@ -131,7 +131,7 @@
         // 2. Load Friends List (Followings)
         async function loadContacts() {
             try {
-                const res = await fetch(`http://localhost:5000/users/${myId}/connections?type=following`, {
+                const res = await fetch(`/users/${myId}/connections?type=following`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const users = await res.json();
@@ -203,7 +203,7 @@
             container.innerHTML = '<div class="flex justify-center pt-10"><div class="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div></div>';
 
             try {
-                const res = await fetch(`http://localhost:5000/messages/${otherId}`, {
+                const res = await fetch(`/messages/${otherId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const messages = await res.json();
@@ -296,7 +296,7 @@
 
             try {
                 // Upload the file first
-                const res = await fetch('http://localhost:5000/chat/upload', {
+                const res = await fetch('/chat/upload', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -369,7 +369,7 @@
             if (chatWithId) {
                 try {
                     // Fetch that user's details
-                    const res = await fetch(`http://localhost:5000/users/${chatWithId}`, {
+                    const res = await fetch(`/users/${chatWithId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const user = await res.json();
@@ -417,7 +417,7 @@
         // Function to call YOUR Backend Server
        async function fetchAIResponse(userText) {
             try {
-                const response = await fetch('http://localhost:5000/chat/ai', { 
+                const response = await fetch('/chat', { 
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',

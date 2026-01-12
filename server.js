@@ -33,6 +33,7 @@ import User from "./models/User.js";
 import Post from "./models/Post.js";
 import Comment from "./models/Comment.js";
 import Message from "./models/Message.js"; // <--- NEW IMPORT
+import Notification from "./models/notification.js";
 
 // Secrets
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -58,10 +59,6 @@ const io = new Server(httpServer, {
   cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
-// --- IMPORT NOTIFICATION MODEL ---
-const Notification = require('./models/notification'); // <--- Add this
-
-
 app.use(cors());
 
 // --- REPLACE BODY PARSER WITH THIS ---
@@ -80,7 +77,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // --- DB CONNECTION ---
-mongoose.connect("mongodb://localhost:27017/social_media_db")
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/social_media_db";
+mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("MongoDB Error:", err));
 
@@ -164,7 +162,7 @@ app.get('/auth/google/callback',
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/auth/google/callback"
+    callbackURL: "/auth/google/callback"
   },
   async (token, refreshToken, profile, done) => {
     try {
@@ -317,46 +315,6 @@ app.post('/chat/ai', async (req, res) => {
         res.status(500).json({ reply: "My brain is having trouble connecting. Check the server terminal for details." });
     }
 });
-
-// --- GET NOTIFICATIONS ---
-app.get('/notifications', verifyToken, async (req, res) => {
-    try {
-        const notifications = await Notification.find({ receiver: req.user.id })
-            .sort({ createdAt: -1 }) // Newest first
-            .populate('sender', 'username name profilePicture') // Get sender details
-            .populate('post', 'imageUrl'); // Get post image for the thumbnail
-
-        // Format data for frontend
-        const formattedNotifications = notifications.map(notif => ({
-            _id: notif._id,
-            type: notif.type,
-            isRead: notif.isRead,
-            createdAt: notif.createdAt,
-            commentPreview: notif.commentPreview,
-            sender: notif.sender,
-            // If post exists, send the image URL, otherwise null
-            postImage: notif.post ? notif.post.imageUrl : null 
-        }));
-
-        res.json(formattedNotifications);
-    } catch (err) {
-        res.status(500).json({ message: "Error fetching notifications" });
-    }
-});
-
-// --- MARK ALL AS READ ---
-app.post('/notifications/mark-read', verifyToken, async (req, res) => {
-    try {
-        await Notification.updateMany(
-            { receiver: req.user.id, isRead: false },
-            { $set: { isRead: true } }
-        );
-        res.json({ message: "All marked as read" });
-    } catch (err) {
-        res.status(500).json({ message: "Error updating notifications" });
-    }
-});
-
 // Comments
 app.post("/posts/:postId/comments", verifyToken, async (req, res) => {
     try {
@@ -574,6 +532,46 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => { console.log("User disconnected"); });
 });
 
-httpServer.listen(5000, () => {
-    console.log("Server running on http://localhost:5000");
+
+// --- GET NOTIFICATIONS ---
+app.get('/notifications', verifyToken, async (req, res) => {
+    try {
+        const notifications = await Notification.find({ receiver: req.userId }) // Note: req.userId comes from verifyToken
+            .sort({ createdAt: -1 })
+            .populate('sender', 'username name profilePicture')
+            .populate('post', 'imageUrl');
+
+        const formattedNotifications = notifications.map(notif => ({
+            _id: notif._id,
+            type: notif.type,
+            isRead: notif.isRead,
+            createdAt: notif.createdAt,
+            commentPreview: notif.commentPreview,
+            sender: notif.sender,
+            postImage: notif.post ? notif.post.imageUrl : null 
+        }));
+
+        res.json(formattedNotifications);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error fetching notifications" });
+    }
+});
+
+// --- MARK READ ---
+app.post('/notifications/mark-read', verifyToken, async (req, res) => {
+    try {
+        await Notification.updateMany(
+            { receiver: req.userId, isRead: false },
+            { $set: { isRead: true } }
+        );
+        res.json({ message: "All marked as read" });
+    } catch (err) {
+        res.status(500).json({ message: "Error updating notifications" });
+    }
+});
+
+const PORT = process.env.PORT || 5000;
+httpServer.listen(PORT, () => {
+   console.log(`Server running on port ${PORT}`);
 });
