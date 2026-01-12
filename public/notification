@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLY Social - Notifications</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="images/fly-logo.png" alt="FLY Logo" class="h-10 w-10">
+                <span class="font-bold text-xl text-gray-800 hidden md:block">Notifications</span>
+            </div>
+            
+            <nav class="flex items-center space-x-6">
+                <button onclick="window.location.href='Home.html'" class="p-2 hover:bg-gray-100 rounded-full text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                </button>
+
+                <button onclick="window.location.href='notification.html'" class="p-2 bg-purple-50 text-purple-600 rounded-full relative">
+                    <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                    </svg>
+                </button>
+
+                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold cursor-pointer overflow-hidden" onclick="window.location.href='profile.html'">
+                    <span id="navUserAvatar">?</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="max-w-2xl mx-auto px-4 py-6">
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-h-[500px]">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                <h2 class="font-bold text-lg">Recent</h2>
+                <button onclick="markAllRead()" class="text-sm text-purple-600 font-semibold hover:text-purple-800">Mark all as read</button>
+            </div>
+
+            <div id="notificationList" class="divide-y divide-gray-50">
+                <div class="flex justify-center p-10">
+                    <div class="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('flySocialToken');
+        if (!token) { window.location.href = 'Login.html'; return; }
+        
+        loadNotifications();
+        loadNavAvatar();
+    });
+
+    // 1. Fetch User for Navbar
+    async function loadNavAvatar() {
+        const token = localStorage.getItem('flySocialToken');
+        try {
+            const response = await fetch('http://localhost:5000/profile', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const user = await response.json();
+            const avatarEl = document.getElementById('navUserAvatar');
+            
+            if (user.profilePicture) {
+                avatarEl.innerHTML = `<img src="${user.profilePicture}" class="w-full h-full object-cover">`;
+            } else {
+                avatarEl.textContent = user.name.charAt(0).toUpperCase();
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    // 2. Fetch Notifications
+    async function loadNotifications() {
+        const list = document.getElementById('notificationList');
+        const token = localStorage.getItem('flySocialToken');
+
+        try {
+            // NOTE: We will create this endpoint in the backend next
+            const response = await fetch('http://localhost:5000/notifications', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch");
+            const notifications = await response.json();
+
+            list.innerHTML = '';
+
+            if (notifications.length === 0) {
+                list.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-20 text-gray-400">
+                        <svg class="w-16 h-16 mb-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <p>No notifications yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            notifications.forEach(notif => {
+                const div = document.createElement('div');
+                div.className = `p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors cursor-pointer ${notif.isRead ? 'bg-white' : 'bg-purple-50/30'}`;
+                
+                // Icon based on type
+                let icon = '';
+                let text = '';
+                
+                if (notif.type === 'like') {
+                    icon = `<div class="absolute -bottom-1 -right-1 bg-red-500 rounded-full p-1 border-2 border-white"><svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>`;
+                    text = `liked your post.`;
+                } else if (notif.type === 'comment') {
+                    icon = `<div class="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1 border-2 border-white"><svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg></div>`;
+                    text = `commented on your post: "${notif.commentPreview || 'Nice!'}"`;
+                } else if (notif.type === 'follow') {
+                    icon = `<div class="absolute -bottom-1 -right-1 bg-purple-500 rounded-full p-1 border-2 border-white"><svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`;
+                    text = `started following you.`;
+                }
+
+                // Profile Image Logic
+                const userImg = notif.sender.profilePicture 
+                    ? `<img src="${notif.sender.profilePicture}" class="w-full h-full object-cover">`
+                    : `<span class="text-white font-bold text-sm">${notif.sender.name.charAt(0)}</span>`;
+
+                div.innerHTML = `
+                    <div class="relative w-12 h-12 flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-purple-400 flex items-center justify-center overflow-hidden">
+                            ${userImg}
+                        </div>
+                        ${icon}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-800">
+                            <span class="font-bold cursor-pointer hover:underline" onclick="window.location.href='profile.html?id=${notif.sender._id}'">${notif.sender.username}</span> 
+                            ${text}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">${timeAgo(new Date(notif.createdAt))}</p>
+                    </div>
+                    ${notif.postImage ? `<img src="${notif.postImage}" class="w-10 h-10 rounded object-cover border border-gray-100">` : ''}
+                `;
+                
+                list.appendChild(div);
+            });
+
+        } catch (error) {
+            console.error(error);
+            list.innerHTML = `<div class="p-4 text-center text-red-500">Error loading notifications.</div>`;
+        }
+    }
+
+    function timeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + "y";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + "mo";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + "d";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + "h";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + "m";
+        return Math.floor(seconds) + "s";
+    }
+
+    async function markAllRead() {
+       // Logic to call backend to mark read
+       alert("All marked as read!"); 
+       // Reload to update UI
+       loadNotifications();
+    }
+    </script>
+</body>
+</html>

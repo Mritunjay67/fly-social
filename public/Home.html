@@ -27,9 +27,12 @@
 <body class="bg-gray-50 min-h-screen">
 
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <!--image Logo -->
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <img src="images/fly-logo.png" alt="FLY Social Logo" class="h-10 w-10">
+
+                <!-- Search Box -->
                 <div class="relative group">
                     <input 
                         type="text" 
@@ -47,20 +50,32 @@
             </div>
             
             <nav class="flex items-center space-x-6">
+
+                <!--Home Button-->
                 <button onclick="window.location.href='Home.html'" class="p-2 hover:bg-gray-100 rounded-full text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 </button>
 
+                <!--Create Post Button-->
                 <button onclick="openCreatePostModal()" class="p-2 hover:bg-purple-50 rounded-xl text-gray-600 hover:text-purple-600 transition-all transform hover:scale-105 border border-transparent hover:border-purple-100" title="Create new post">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                 </button>
 
+                    <!--Notification Button -->
+                <button onclick="window.location.href='notification.html'" class="p-2 hover:bg-gray-100 rounded-full text-gray-600">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                </button>
+
+                <!--Chat Button-->
                 <button onclick="window.location.href='chat.html'" class="p-2 hover:bg-gray-100 rounded-full text-gray-600 relative">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                 </button>
 
+                <!--Profile Button -->
                 <div class="relative">
                     <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold cursor-pointer overflow-hidden" onclick="toggleUserMenu()">
                         <span id="userAvatar" class="text-white font-semibold">?</span>
@@ -138,7 +153,7 @@
                     </div>
                     
                     <img id="imagePreview" class="w-full h-full object-contain hidden">
-                    <input id="postImageFile" type="file" accept="image/*,video/mp4,video/quicktime" class="hidden" onchange="previewFile(this)">
+                    <input id="postImageFile" type="file" accept="image/*,video/*" class="hidden" onchange="previewFile(this)"> 
                     
                     <button id="changeImageBtn" onclick="document.getElementById('postImageFile').click()" class="hidden absolute bottom-4 left-4 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 backdrop-blur-md" title="Change Image">
                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>

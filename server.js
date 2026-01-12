@@ -58,6 +58,9 @@ const io = new Server(httpServer, {
   cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
+// --- IMPORT NOTIFICATION MODEL ---
+const Notification = require('./models/notification'); // <--- Add this
+
 
 app.use(cors());
 
@@ -252,6 +255,15 @@ app.post("/posts/:postId/like", verifyToken, async (req, res) => {
         else post.likes.splice(index, 1);
         await post.save();
         res.status(200).json({ message: index === -1 ? "Liked" : "Unliked", likesCount: post.likes.length });
+        if (!post.likes.includes(req.user.id) && post.user.toString() !== req.user.id) {
+            
+            await Notification.create({
+                sender: req.user.id,    
+                receiver: post.user,     
+                type: 'like',
+                post: post._id
+            });
+        }
     } catch (err) { res.status(500).json({ message: "Server error" }); }
 });
 
@@ -303,6 +315,45 @@ app.post('/chat/ai', async (req, res) => {
         }
 
         res.status(500).json({ reply: "My brain is having trouble connecting. Check the server terminal for details." });
+    }
+});
+
+// --- GET NOTIFICATIONS ---
+app.get('/notifications', verifyToken, async (req, res) => {
+    try {
+        const notifications = await Notification.find({ receiver: req.user.id })
+            .sort({ createdAt: -1 }) // Newest first
+            .populate('sender', 'username name profilePicture') // Get sender details
+            .populate('post', 'imageUrl'); // Get post image for the thumbnail
+
+        // Format data for frontend
+        const formattedNotifications = notifications.map(notif => ({
+            _id: notif._id,
+            type: notif.type,
+            isRead: notif.isRead,
+            createdAt: notif.createdAt,
+            commentPreview: notif.commentPreview,
+            sender: notif.sender,
+            // If post exists, send the image URL, otherwise null
+            postImage: notif.post ? notif.post.imageUrl : null 
+        }));
+
+        res.json(formattedNotifications);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching notifications" });
+    }
+});
+
+// --- MARK ALL AS READ ---
+app.post('/notifications/mark-read', verifyToken, async (req, res) => {
+    try {
+        await Notification.updateMany(
+            { receiver: req.user.id, isRead: false },
+            { $set: { isRead: true } }
+        );
+        res.json({ message: "All marked as read" });
+    } catch (err) {
+        res.status(500).json({ message: "Error updating notifications" });
     }
 });
 
@@ -383,6 +434,19 @@ app.post("/users/:id/follow", verifyToken, async (req, res) => {
     try {
         await User.findByIdAndUpdate(req.params.id, { $addToSet: { followers: req.userId } });
         await User.findByIdAndUpdate(req.userId, { $addToSet: { following: req.params.id } });
+        const existingNotif = await Notification.findOne({
+            sender: req.userId,
+            receiver: req.params.id,
+            type: 'follow'
+        });
+
+        if (!existingNotif) {
+            await Notification.create({
+                sender: req.userId,
+                receiver: req.params.id,
+                type: 'follow'
+            });
+        }
         res.status(200).json({ message: "Followed" });
     } catch (err) { res.status(500).json({ message: "Server error" }); }
 });
@@ -391,6 +455,11 @@ app.post("/users/:id/unfollow", verifyToken, async (req, res) => {
     try {
         await User.findByIdAndUpdate(req.params.id, { $pull: { followers: req.userId } });
         await User.findByIdAndUpdate(req.userId, { $pull: { following: req.params.id } });
+        await Notification.findOneAndDelete({
+            sender: req.userId,
+            receiver: req.params.id,
+            type: 'follow'
+        });
         res.status(200).json({ message: "Unfollowed" });
     } catch (err) { res.status(500).json({ message: "Server error" }); }
 });

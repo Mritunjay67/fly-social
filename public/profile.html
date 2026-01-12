@@ -88,6 +88,9 @@
                         <span id="modalUsername" class="font-bold text-gray-900 text-sm"></span>
                     </div>
                     <button id="modalDeleteBtn" class="text-red-500 hover:text-red-700 text-xs font-bold hidden">DELETE POST</button>
+                    <button onclick="closePostModal()" class="text-gray-400 hover:text-gray-700 p-1 ml-auto">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
                 <div id="modalCommentsList" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"></div>
                 <div class="border-t border-gray-100 p-4 bg-white">
@@ -172,6 +175,22 @@
         // GLOBAL VARS
         let profilePosts = [];
         let currentModalPostId = null;
+
+        // --- CLOSE MODAL FUNCTION ---
+        window.closePostModal = function() {
+            // 1. Modal ko chhupao
+            document.getElementById('postModal').classList.add('hidden');
+            
+            // 2. Agar video chal raha hai to usse band karo (Varna background me awaz aati rahegi)
+            const video = document.querySelector('#postModal video');
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+            
+            // 3. Reset ID
+            window.currentModalPostId = null;
+        };
 
         // --- SEARCH ---
         let searchTimeout = null;
@@ -270,8 +289,34 @@
                     profilePosts.forEach((post, index) => {
                         const div = document.createElement('div');
                         div.className = "relative aspect-square bg-gray-100 group overflow-hidden cursor-pointer hover:opacity-90 transition-opacity";
+                        
+                        // 🔥 YE LINE BAHUT ZAROORI HAI (CLICK KE LIYE)
                         div.onclick = () => openPostModal(index);
-                        div.innerHTML = `<img src="${post.imageUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"><div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center text-white gap-4 font-bold"><span class="flex items-center gap-1"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> ${post.likes.length}</span></div>`;
+
+                        // --- VIDEO CHECK ---
+                        const isVideo = post.imageUrl.match(/\.(mp4|mov|webm)$/i);
+                        let mediaHtml = '';
+                        
+                        if (isVideo) {
+                            mediaHtml = `
+                                <video src="${post.imageUrl}" class="w-full h-full object-cover"></video>
+                                <div class="absolute top-2 right-2 bg-black/50 p-1 rounded-full z-10">
+                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            `;
+                        } else {
+                            mediaHtml = `<img src="${post.imageUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">`;
+                        }
+
+                        div.innerHTML = `
+                            ${mediaHtml}
+                            <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center text-white gap-4 font-bold">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> 
+                                    ${post.likes.length}
+                                </span>
+                            </div>`;
+                        
                         grid.appendChild(div);
                     });
                 }
@@ -304,82 +349,116 @@
         });
 
         // --- POST MODAL ---
-        window.openPostModal = async function(index) {
-            const post = profilePosts[index];
-            currentModalPostId = post._id;
-            const token = localStorage.getItem('flySocialToken');
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            
-            document.getElementById('modalImg').src = post.imageUrl;
-            document.getElementById('modalUsername').textContent = post.user.username;
-            const avatar = document.getElementById('modalUserAvatar');
-            if (post.user.profilePicture) avatar.innerHTML = `<img src="${post.user.profilePicture}" class="w-full h-full object-cover">`;
-            else avatar.textContent = post.user.name.charAt(0);
-            const isLiked = post.likes.includes(payload.id);
-            updateModalHeart(isLiked, post.likes.length);
-            const deleteBtn = document.getElementById('modalDeleteBtn');
-            if (payload.id === post.user._id) {
-                deleteBtn.classList.remove('hidden');
-                deleteBtn.onclick = () => deletePostFromModal(post._id);
-            } else { deleteBtn.classList.add('hidden'); }
-
-            const list = document.getElementById('modalCommentsList');
-            list.innerHTML = `<div class="flex gap-3 items-start mb-4"><div class="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold overflow-hidden">${post.user.profilePicture ? `<img src="${post.user.profilePicture}" class="w-full h-full object-cover">` : post.user.name.charAt(0)}</div><div class="text-sm"><span class="font-bold mr-1">${post.user.username}</span><span>${post.caption}</span></div></div><div id="loadingComments" class="text-center text-gray-400 text-xs">Loading comments...</div>`;
-            document.getElementById('postModal').classList.remove('hidden');
+       window.openPostModal = async function(index) {
             try {
+                // 1. Check agar Post exist karta hai
+                if (!profilePosts || !profilePosts[index]) {
+                    alert("Error: Post data not found. Please reload.");
+                    return;
+                }
+
+                const post = profilePosts[index];
+                currentModalPostId = post._id;
+
+                // 2. Token Check
+                const token = localStorage.getItem('flySocialToken');
+                if (!token) { window.location.href = 'Login.html'; return; }
+                
+                // Safe Token Decoding
+                let payload;
+                try {
+                    payload = JSON.parse(atob(token.split('.')[1]));
+                } catch (e) {
+                    console.error("Token Error:", e);
+                    localStorage.removeItem('flySocialToken');
+                    window.location.href = 'Login.html'; 
+                    return;
+                }
+
+                // 3. HTML Elements Dhoondo
+                const modalMediaContainer = document.querySelector('#postModal .bg-black');
+                const modalUsername = document.getElementById('modalUsername');
+                const modalUserAvatar = document.getElementById('modalUserAvatar');
+
+                if (!modalMediaContainer || !modalUsername || !modalUserAvatar) {
+                    console.error("HTML Elements missing in Modal!");
+                    alert("Error: Modal HTML structure is incomplete.");
+                    return;
+                }
+
+                // 4. Video vs Image Setup
+                const isVideo = post.imageUrl && post.imageUrl.match(/\.(mp4|mov|webm)$/i);
+                modalMediaContainer.innerHTML = ''; // Safai
+
+                if (isVideo) {
+                    modalMediaContainer.innerHTML = `<video src="${post.imageUrl}" class="max-h-full max-w-full" controls autoplay></video>`;
+                } else {
+                    modalMediaContainer.innerHTML = `<img id="modalImg" src="${post.imageUrl}" class="max-h-full max-w-full object-contain">`;
+                }
+
+                // 5. User Info Set Karo (Safe Check ke sath)
+                const user = post.user || { username: "Unknown", name: "Unknown", _id: "unknown" }; // Fallback agar user delete ho gaya ho
+                modalUsername.textContent = user.username;
+                
+                if (user.profilePicture) {
+                    modalUserAvatar.innerHTML = `<img src="${user.profilePicture}" class="w-full h-full object-cover">`;
+                } else {
+                    modalUserAvatar.textContent = (user.name && user.name.charAt(0)) || "?";
+                }
+
+                // 6. Like Button Logic
+                const isLiked = post.likes && post.likes.includes(payload.id);
+                if (typeof window.updateModalHeart === "function") {
+                    updateModalHeart(isLiked, post.likes ? post.likes.length : 0);
+                }
+
+                // 7. Delete Button (Sirf apna post delete kar sakein)
+                const deleteBtn = document.getElementById('modalDeleteBtn');
+                if (payload.id === user._id) {
+                    deleteBtn.classList.remove('hidden');
+                    deleteBtn.onclick = () => deletePostFromModal(post._id);
+                } else { 
+                    deleteBtn.classList.add('hidden'); 
+                }
+
+                // 8. Comments Load Karo
+                const list = document.getElementById('modalCommentsList');
+                const safeCaption = post.caption || "";
+                
+                list.innerHTML = `
+                    <div class="flex gap-3 items-start mb-4">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold overflow-hidden">
+                            ${user.profilePicture ? `<img src="${user.profilePicture}" class="w-full h-full object-cover">` : (user.name ? user.name.charAt(0) : "?")}
+                        </div>
+                        <div class="text-sm">
+                            <span class="font-bold mr-1">${user.username}</span>
+                            <span>${safeCaption}</span>
+                        </div>
+                    </div>
+                    <div id="loadingComments" class="text-center text-gray-400 text-xs">Loading comments...</div>
+                `;
+                
+                document.getElementById('postModal').classList.remove('hidden');
+
+                // API Call for Comments
                 const res = await fetch(`http://localhost:5000/posts/${post._id}/comments`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const comments = await res.json();
-                document.getElementById('loadingComments').remove();
+                
+                const loader = document.getElementById('loadingComments');
+                if(loader) loader.remove();
+                
                 comments.forEach(c => {
+                    const cUser = c.user || { username: "Unknown", name: "?" };
                     const div = document.createElement('div');
                     div.className = "flex gap-3 items-start mb-3";
-                    div.innerHTML = `<div class="w-8 h-8 bg-gray-100 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold overflow-hidden">${c.user.name.charAt(0)}</div><div class="text-sm"><span class="font-bold mr-1">${c.user.username}</span><span class="text-gray-700">${c.text}</span></div>`;
+                    div.innerHTML = `<div class="w-8 h-8 bg-gray-100 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold overflow-hidden">${cUser.name ? cUser.name.charAt(0) : "?"}</div><div class="text-sm"><span class="font-bold mr-1">${cUser.username}</span><span class="text-gray-700">${c.text}</span></div>`;
                     list.appendChild(div);
                 });
-            } catch (e) {}
-        };
-        window.closePostModal = function() { document.getElementById('postModal').classList.add('hidden'); };
-        window.updateModalHeart = function(isLiked, count) {
-            const icon = document.getElementById('modalHeartIcon');
-            document.getElementById('modalLikesCount').textContent = count + ' likes';
-            if (isLiked) { icon.classList.add('text-red-500', 'fill-current'); icon.classList.remove('text-gray-600'); }
-            else { icon.classList.remove('text-red-500', 'fill-current'); icon.classList.add('text-gray-600'); }
-        };
-        window.toggleModalLike = async function() {
-            const token = localStorage.getItem('flySocialToken');
-            try {
-                const res = await fetch(`http://localhost:5000/posts/${currentModalPostId}/like`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.ok) {
-                    const data = await res.json();
-                    updateModalHeart(data.message === "Post liked", data.likesCount);
-                }
-            } catch(e) {}
-        };
-        window.submitModalComment = async function(e) {
-            e.preventDefault();
-            const input = document.getElementById('modalCommentInput');
-            const text = input.value.trim();
-            if (!text) return;
-            const token = localStorage.getItem('flySocialToken');
-            try {
-                const res = await fetch(`http://localhost:5000/posts/${currentModalPostId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
-                if (res.ok) {
-                    const c = await res.json();
-                    const div = document.createElement('div');
-                    div.className = "flex gap-3 items-start mb-3";
-                    div.innerHTML = `<div class="w-8 h-8 bg-gray-100 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold">${c.user.username.charAt(0)}</div><div class="text-sm"><span class="font-bold mr-1">${c.user.username}</span><span>${c.text}</span></div>`;
-                    document.getElementById('modalCommentsList').appendChild(div);
-                    input.value = '';
-                }
-            } catch(e) {}
-        };
-        window.deletePostFromModal = async function(postId) {
-            if(!confirm("Delete this post?")) return;
-            const token = localStorage.getItem('flySocialToken');
-            try {
-                const res = await fetch(`http://localhost:5000/posts/${postId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.ok) window.location.reload();
-            } catch(e) {}
+
+            } catch (err) {
+                console.error("CRITICAL ERROR inside openPostModal:", err);
+                alert("Error: " + err.message);
+            }
         };
 
        // --- FOLLOW LIST LOGIC ---
